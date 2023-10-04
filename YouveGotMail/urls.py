@@ -20,5 +20,5 @@ from main import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('persons/', views.create_person, name='create_person'),
-
+    path('persons/list/', views.get_all_person, name='get_all_persons'),
 ]
