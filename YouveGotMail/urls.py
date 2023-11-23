@@ -20,6 +20,6 @@ from main.views import PersonCreateView, PersonUpdateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/persons', PersonCreateView.as_view(), name='create person'),
-    path('api/persons/<int:number>/', PersonUpdateView.as_view(), name='update person'),
+    path('api/persons', PersonCreateView.as_view(), name='create-person'),
+    path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
 ]
