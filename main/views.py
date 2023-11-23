@@ -9,3 +9,8 @@ class PersonCreateView(generics.ListCreateAPIView):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
 
+@method_decorator(csrf_exempt, name='dispatch')
+class PersonUpdateView(generics.UpdateAPIView):
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
+    lookup_field = 'number'
