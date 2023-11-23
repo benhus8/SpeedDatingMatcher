@@ -1,16 +1,12 @@
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
-from .models import Person
-from .serializers import PersonSerializer
 
-@method_decorator(csrf_exempt, name='dispatch')
+from .models import Person
+from .serializers import PersonCreateSerializer, PersonUpdateSerializer
+
 class PersonCreateView(generics.ListCreateAPIView):
     queryset = Person.objects.all()
-    serializer_class = PersonSerializer
+    serializer_class = PersonCreateSerializer
 
-@method_decorator(csrf_exempt, name='dispatch')
 class PersonUpdateView(generics.UpdateAPIView):
     queryset = Person.objects.all()
-    serializer_class = PersonSerializer
-    lookup_field = 'number'
+    serializer_class = PersonUpdateSerializer
