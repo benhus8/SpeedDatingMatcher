@@ -31,3 +31,8 @@ class PersonUpdateSerializer(serializers.ModelSerializer):
                 fields=['email']
             )
         ]
+
+class PersonDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = ['number', 'first_name', 'email']
