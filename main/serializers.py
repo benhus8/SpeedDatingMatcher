@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
-from .models import Person
+from .models import Person, ContactRequest
 
 
 class PersonCreateSerializer(serializers.ModelSerializer):
@@ -31,3 +31,8 @@ class PersonUpdateSerializer(serializers.ModelSerializer):
                 fields=['email']
             )
         ]
+
+class GetAllPersonsWithContactsReqSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactRequest
+        fields = '__all__'
