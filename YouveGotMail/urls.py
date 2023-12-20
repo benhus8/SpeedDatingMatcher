@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main.views import PersonCreateView, PersonUpdateView
+from main.views import PersonCreateView, PersonUpdateView, GetAllPersonsWithContactsReqView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
+    path('api/persons/contacts/', GetAllPersonsWithContactsReqView.as_view(), name='get-all-persons-with-contacts')
 ]
