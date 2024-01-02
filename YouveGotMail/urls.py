@@ -37,6 +37,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
-    path('api/contact-requests', ContactRequestCreateView.as_view(), name='create-contact')
+    path('api/contact-requests', ContactRequestCreateView.as_view(), name='create-contact'),
     path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person')
 ]
