@@ -1,8 +1,11 @@
 from rest_framework import generics
-from .models import Person, ContactRequest
-from .serializers import ContactRequestCreateSerializer, PersonUpdateSerializer, PersonCreateSerializer
+from .models import  ContactRequest
 from rest_framework.response import Response
 from rest_framework import status
+from .models import Person
+from .serializers import PersonCreateSerializer, PersonUpdateSerializer, ContactRequestCreateSerializer
+
+
 class PersonCreateView(generics.ListCreateAPIView):
     queryset = Person.objects.all()
     serializer_class = PersonCreateSerializer
@@ -21,3 +24,6 @@ class ContactRequestCreateView(generics.ListCreateAPIView):
         self.perform_create(serializer)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class PersonDeleteView(generics.DestroyAPIView):
+    queryset = Person.objects.all()
