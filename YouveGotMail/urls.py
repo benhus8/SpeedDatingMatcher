@@ -16,11 +16,28 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main.views import PersonCreateView, PersonUpdateView, GetAllPersonsWithContactsReqView
+from main.views import PersonCreateView, PersonUpdateView, GetAllPersonsWithContactsReqView, ContactRequestCreateView, PersonDeleteView
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Snippets API",
+      default_version='v1',
+      description="Swagger for YouVe Got Mail",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
+    path('api/contact-requests', ContactRequestCreateView.as_view(), name='create-contact'),
+    path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person')
     path('api/persons/contacts/', GetAllPersonsWithContactsReqView.as_view(), name='get-all-persons-with-contacts')
 ]
