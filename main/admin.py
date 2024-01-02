@@ -6,3 +6,4 @@ from .models import Person
 class PersonAdmin(admin.ModelAdmin):
     list_display = ('number', 'first_name', 'email')
     search_fields = ('number', 'first_name', 'email')
+    list_per_page = 10
