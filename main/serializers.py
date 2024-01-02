@@ -75,3 +75,8 @@ class ContactRequestCreateSerializer(serializers.Serializer):
         contact_request.save()
 
         return contact_request
+
+class ContactRequestDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ContactRequest
+        fields='__all__'
