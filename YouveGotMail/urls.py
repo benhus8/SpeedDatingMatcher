@@ -20,6 +20,7 @@ from main.views import PersonCreateView, PersonUpdateView, ConstactRequestCreate
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from main.views import PersonCreateView, PersonUpdateView, ContactRequestCreateView, PersonDeleteView
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -38,6 +39,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
+    path('api/contact-requests', ContactRequestCreateView.as_view(), name='create-contact'),
+    path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person')
     path('api/delete-contact-requests/<int:person_requesting_contact_id>/<int:preferred_person_id>/', ContactRequestDeleteView.as_view(), name='delete-person-contact-request'),
     path('api/contact-requests', ConstactRequestCreateView.as_view(), name='create-contact')
 ]

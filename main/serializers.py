@@ -43,7 +43,7 @@ class ContactRequestCreateSerializer(serializers.Serializer):
         preferred_person_id = data.get('preferred_person_id')
 
         if person_requesting_contact_id == preferred_person_id:
-            raise serializers.ValidationError("It cannot be te the same person")
+            raise serializers.ValidationError("It cannot be the same person")
 
         person_requesting_contact = Person.objects.filter(pk=person_requesting_contact_id).first()
         preferred_person = Person.objects.filter(pk=preferred_person_id).first()
