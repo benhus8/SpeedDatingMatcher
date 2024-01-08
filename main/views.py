@@ -35,7 +35,7 @@ class ContactRequestDeleteView(generics.DestroyAPIView):
         return JsonResponse({'message': 'Contact request deleted successfully'})
 
 
-class ConstactRequestCreateView(generics.ListCreateAPIView):
+class ContactRequestCreateView(generics.ListCreateAPIView):
     queryset = ContactRequest.objects.all()
     serializer_class = ContactRequestCreateSerializer
 
