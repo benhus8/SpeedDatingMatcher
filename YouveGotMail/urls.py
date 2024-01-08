@@ -38,6 +38,6 @@ urlpatterns = [
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
     path('api/contact-requests', ContactRequestCreateView.as_view(), name='create-contact'),
-    path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person')
+    path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person'),
     path('api/persons/contacts/', GetAllPersonsWithContactsReqView.as_view(), name='get-all-persons-with-contacts')
 ]
