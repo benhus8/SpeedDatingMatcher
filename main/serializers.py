@@ -75,7 +75,16 @@ class ContactRequestCreateSerializer(serializers.Serializer):
 
         return contact_request
 
+class PersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = ['number', 'first_name', 'email']
+
 class GetAllPersonsWithContactsReqSerializer(serializers.ModelSerializer):
+    person_requesting_contact = PersonSerializer(read_only=True)
+    preferred_person = PersonSerializer(many=True, read_only=True)
+
     class Meta:
         model = ContactRequest
-        fields = '__all__'
+        fields = ['person_requesting_contact', 'preferred_person']
+
