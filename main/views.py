@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from .models import Person, ContactRequest
-from .serializers import PersonCreateSerializer, PersonUpdateSerializer, GetAllPersonsWithContactsReqSerializer, \
-    ContactRequestCreateSerializer, PersonSerializer, PersonWithPreferredPersonsSerializer
+from .serializers import PersonCreateSerializer, PersonUpdateSerializer, \
+    ContactRequestCreateSerializer, PersonWithPreferredPersonsSerializer
 
 
 class PersonCreateView(generics.ListCreateAPIView):
