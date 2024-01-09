@@ -21,6 +21,20 @@ class PersonCreateSerializer(serializers.ModelSerializer):
             )
         ]
 
+
+class PersonWithPreferredPersonsSerializer(serializers.ModelSerializer):
+    preferred_persons = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Person
+        fields = ['number', 'first_name', 'email', 'preferred_persons']
+
+    def get_preferred_persons(self, obj):
+        contact_requests = ContactRequest.objects.filter(person_requesting_contact=obj)
+        preferred_persons_list = [request.preferred_person.number for request in contact_requests]
+        return preferred_persons_list
+
+
 class PersonUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
