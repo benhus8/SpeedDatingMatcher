@@ -1,12 +1,10 @@
 from django.http import JsonResponse
 from rest_framework import generics
-
-
-from django.shortcuts import get_object_or_404
 from .models import  Person, ContactRequest
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import PersonCreateSerializer, PersonUpdateSerializer, ContactRequestCreateSerializer, ContactRequestDeleteSerializer
+from django.shortcuts import get_object_or_404
+from .serializers import PersonCreateSerializer, PersonUpdateSerializer, ContactRequestCreateSerializer, PersonWithPreferredPersonsSerializer, ContactRequestDeleteSerializer
 
 
 class PersonCreateView(generics.ListCreateAPIView):
@@ -34,6 +32,10 @@ class ContactRequestDeleteView(generics.DestroyAPIView):
 
         return JsonResponse({'message': 'Contact request deleted successfully'})
 
+
+class PersonListAPIView(generics.ListAPIView):
+    queryset = Person.objects.all()
+    serializer_class = PersonWithPreferredPersonsSerializer
 
 class ContactRequestCreateView(generics.ListCreateAPIView):
     queryset = ContactRequest.objects.all()
