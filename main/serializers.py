@@ -89,6 +89,13 @@ class ContactRequestCreateSerializer(serializers.Serializer):
 
         return contact_request
 
+
+class ContactRequestDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ContactRequest
+        fields='__all__'
+
+
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
