@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from .models import Person, ContactRequest
 from .serializers import PersonCreateSerializer, PersonUpdateSerializer, GetAllPersonsWithContactsReqSerializer, \
-    ContactRequestCreateSerializer, PersonSerializer
+    ContactRequestCreateSerializer, PersonSerializer, PersonWithPreferredPersonsSerializer
 
 
 class PersonCreateView(generics.ListCreateAPIView):
@@ -16,33 +16,9 @@ class PersonUpdateView(generics.UpdateAPIView):
     queryset = Person.objects.all()
     serializer_class = PersonUpdateSerializer
 
-class GetAllPersonsWithContactsReqView(APIView):
-    def get(self, request, *args, **kwargs):
-        contact_requests = ContactRequest.objects.all()
-
-        serialized_data_dict = {}
-
-        for contact_request in contact_requests:
-            person_requesting_contact_data = PersonSerializer(contact_request.person_requesting_contact).data
-            preferred_person_data = PersonSerializer(contact_request.preferred_person).data
-
-            if person_requesting_contact_data['number'] not in serialized_data_dict:
-
-                serialized_data_dict[person_requesting_contact_data['number']] = {
-                    'number': person_requesting_contact_data['number'],
-                    'first_name': person_requesting_contact_data['first_name'],
-                    'email': person_requesting_contact_data['email'],
-                    'preferred_person': [preferred_person_data['number']]
-                }
-            else:
-
-                serialized_data_dict[person_requesting_contact_data['number']]['preferred_person'].append(
-                    preferred_person_data['number']
-                )
-
-        serialized_data = list(serialized_data_dict.values())
-
-        return Response(serialized_data)
+class PersonListAPIView(generics.ListAPIView):
+    queryset = Person.objects.all()
+    serializer_class = PersonWithPreferredPersonsSerializer
 
 class ContactRequestCreateView(generics.ListCreateAPIView):
     queryset = ContactRequest.objects.all()
