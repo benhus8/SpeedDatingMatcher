@@ -19,7 +19,8 @@ from django.urls import path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from main.views import PersonCreateView, PersonUpdateView, ContactRequestCreateView, PersonDeleteView, ContactRequestDeleteView, PersonListAPIView
+from main.views import PersonCreateView, PersonUpdateView, ContactRequestCreateView, PersonDeleteView, \
+    ContactRequestDeleteView, PersonListAPIView, send_email
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -42,4 +43,5 @@ urlpatterns = [
     path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person'),
     path('api/persons/contacts/', PersonListAPIView.as_view(), name='get-all-persons-with-contacts'),
     path('api/delete-contact-requests/<int:person_requesting_contact_id>/<int:preferred_person_id>/', ContactRequestDeleteView.as_view(), name='delete-person-contact-request'),
+    path('api/send-emails/', send_email, name='send-emails'),
 ]
