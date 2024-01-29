@@ -1,4 +1,4 @@
-export async function getData() {
+export async function getAllPersonsWithContactRequests() {
   const res = await fetch(' http://127.0.0.1:8000/api/persons/contacts/')
 
   if (!res.ok) {
@@ -9,24 +9,59 @@ export async function getData() {
 }
 
 export default async function Page() {
-  const data = await getData()
+  const data = await getAllPersonsWithContactRequests()
 
   return <main></main>
 }
 
-export const deleteRecord = async (personRequestingContactId, preferredPersonId) => {
+export const deleteContactRequest = async (personRequestingContactId, preferredPersonId) => {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/delete-contact-requests/${personRequestingContactId}/${preferredPersonId}`, {
       method: 'DELETE',
     });
-
-    if (!response.ok) {
-      throw new Error('Nie udało się usunąć rekordu.');
-    }
-
     return response.json();
   } catch (error) {
-    console.error('Błąd podczas usuwania rekordu:', error);
+    console.error(error);
+  }
+};
+
+export const deletePerson = async (personNumber) => {
+  try {
+    await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/delete/`, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const createPerson = async (data) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/persons`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const editPerson = async (data, personNumber) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  } catch (error) {
+    console.error(error);
     throw error;
   }
 };
