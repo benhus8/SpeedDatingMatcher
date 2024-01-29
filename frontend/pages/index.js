@@ -14,13 +14,21 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    CircularProgress
+    CircularProgress,
+    DropdownTrigger,
+    Dropdown,
+    DropdownMenu,
+    DropdownItem,
+    DropdownSection,
+    Input, useDisclosure
 } from "@nextui-org/react";
 
-import {deleteRecord, getData} from "./API/api";
+import {deleteContactRequest, getAllPersonsWithContactRequests} from "./API/api";
 import ConfirmationModal from './/components/confirmationModal';
-import {DeleteIcon} from './/components/DeleteIcon';
-import DeleteConfirmationModal from './/components/confirmationModal';
+import PersonModal from './components/PersonModal'
+import {VerticalDotsIcon} from "./components/VerticalDotIcon";
+import {SearchIcon} from "./components/SearchIcon";
+import DeleteAlertModal from "./components/DeleteAlertModal";
 
 
 const Home = () => {
@@ -28,17 +36,35 @@ const Home = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const result = await getData();
-                console.log('Dane z serwera:', result);
-                setData(result);
-            } catch (error) {
-                console.error('Błąd w komponencie:', error);
-            }
-        };
+    const {isOpen: isPersonModalOpen, onOpen: onPersonModalOpen, onClose: onPersonModalClose} = useDisclosure();
 
+    const {isOpen: isDeleteAlertModalOpen, onOpen: onDeleteAlertModalOpen, onClose: onDeleteAlertModalClose} = useDisclosure();
+
+    const [personObjectValue, setPersonObjectValue] = useState(undefined)
+    const [objectToDelete, setObjectToDelete] = useState(undefined)
+
+    const [deleteObjectType, setDeleteObjectType] = useState(undefined)
+
+
+    function handleEditPerson(personRowValue) {
+        onPersonModalOpen()
+        setPersonObjectValue(personRowValue)
+    }
+
+    const handleDeletePerson = (person) => {
+        setObjectToDelete(person)
+        setDeleteObjectType("person")
+        onDeleteAlertModalOpen()
+    };
+    const fetchData = async () => {
+        setPersonObjectValue(undefined)
+        try {
+            const result = await getAllPersonsWithContactRequests();
+            setData(result);
+        } catch (error) {}
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -84,14 +110,43 @@ const Home = () => {
                 );
             case "preferred_persons":
                 return (
-                    mapPreferredPersons(cellValue)
+                    <p className="text-bold text-sm">{mapPreferredPersons(cellValue)}</p>
                 );
             case "actions":
                 return (
-                    <div className="relative flex items-center gap-2">
-                        <Button isIconOnly color="danger" aria-label="Like" variant="ghost">
-                            <DeleteIcon/>
-                        </Button>
+                    <div className="relative flex justify-end items-center gap-2">
+                        <Dropdown>
+                            <DropdownTrigger>
+                                <Button isIconOnly
+                                        size="sm"
+                                        variant="bordered"
+                                        className="bg-pink-100 border-pink-200"
+
+                                >
+                                    <VerticalDotsIcon className="text-default-300"/>
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                                <DropdownSection showDivider>
+                                    <DropdownItem onClick={() => handleEditPerson(person)} startContent={<Image src="/edit_person_icon.svg/"/> }
+                                    >
+                                        Edytuj Osobę
+                                    </DropdownItem>
+                                    <DropdownItem startContent={<Image src="/add_contact_request.svg/"/>}
+                                    >
+                                        Dodaj preferencję</DropdownItem>
+                                </DropdownSection>
+                                <DropdownSection>
+                                    <DropdownItem
+                                        onClick={() => handleDeletePerson(person)}
+                                        startContent={<Image src="/delete_person_icon.svg/"/>}
+                                    >Usuń osobę
+                                    </DropdownItem>
+                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>}>Usuń
+                                        preferencję</DropdownItem>
+                                </DropdownSection>
+                            </DropdownMenu>
+                        </Dropdown>
                     </div>
                 );
             default:
@@ -99,10 +154,7 @@ const Home = () => {
         }
     }, []);
 
-    const handleDeleteClick = (personRequestingContactId, preferredPersonId) => {
-        setRecordToDelete({personRequestingContactId, preferredPersonId});
-        setShowConfirmation(true);
-    };
+
 
     function mapPreferredPersons(preferredPersons) {
         console.log(preferredPersons)
@@ -115,8 +167,8 @@ const Home = () => {
         try {
             const {personRequestingContactId, preferredPersonId} = recordToDelete;
             if (personIdToDelete === preferredPersonId) {
-                await deleteRecord(personRequestingContactId, preferredPersonId);
-                setData(await getData());
+                await deleteContactRequest(personRequestingContactId, preferredPersonId);
+                setData(await getAllPersonsWithContactRequests());
             } else {
                 console.error('Numer osoby do usunięcia nie pasuje do rekordu.');
             }
@@ -129,7 +181,7 @@ const Home = () => {
     const handleCloseConfirmation = () => {
         setShowConfirmation(false);
     };
-
+    //TODO add filtering function
     return (
         <NextUIProvider>
             <div className="bg-pink-200 h-screen w-screen">
@@ -138,6 +190,7 @@ const Home = () => {
                 </Head>
                 <div className="mx-10 flex">
                     <Image
+                        isZoomed
                         alt="MailIcon"
                         src="/mail_icon.png"
                     />
@@ -146,52 +199,85 @@ const Home = () => {
 
                 <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
                     <div className=" ml-10 mb-3">
-                        <Button
-                            className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
-                            variant="faded"
+                        <Button onPress={onPersonModalOpen}
+                                className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
+                                variant="faded"
+                                startContent={<Image src="/add_person_icon.svg/"/>}
                         >
-                            Dodaj nową osobę
+                            Dodaj osobę
                         </Button>
+                        <PersonModal
+                            mode={personObjectValue === undefined ? "add" : "edit"}
+                            personObject={personObjectValue}
+                            setPersonObject={setPersonObjectValue}
+                            fetchDataOnClose={fetchData}
+                            isPersonModalOpen={isPersonModalOpen}
+                            onPersonModalClose={onPersonModalClose}
+                        />
+
+                        <DeleteAlertModal
+                            objectToDeleteName={deleteObjectType}
+                            objectToDelete={objectToDelete}
+                            fetchDataOnClose={fetchData}
+                            isDeleteAlertModalOpen={isDeleteAlertModalOpen}
+                            onDeleteAlertModalClose={onDeleteAlertModalClose}
+                        />
+
                     </div>
                     <Card
                         shadow="sm"
                         className="mx-10 border-pink-300"
                     >
                         <CardBody>
-                            {data !== null ? (
-                                <Table
-                                    className="table-hover h-3/4-screen w-3/4-screen mx-1 "
-                                    aria-label="Example table with dynamic content"
-                                    color={"default"}
-                                    selectionMode="single"
-                                    fullWidth
-                                >
-                                    <TableHeader columns={columns}>
-                                        {(column) =>
-                                            <TableColumn
-                                                key={column.key}
-                                                width={400}
-                                            >
-                                                {column.label}
-                                            </TableColumn>
-                                        }
-                                    </TableHeader>
-                                    <TableBody items={data}>
-                                        {(item) => (
-                                            <TableRow key={item.number}>
-                                                {columns.map((column) => (
-                                                    <TableCell key={column.key}>
-                                                        {renderCell(item, column.key)}
-                                                    </TableCell>
-                                                ))}
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <CircularProgress aria-label="Loading..."/>
-                            )}
+                            <div>
+                                <Input
+                                    size="sm"
+                                    isClearable
+                                    className="w-full sm:max-w-[25%] mb-3 ml-5"
+                                    placeholder="Wyszukaj po imieniu..."
+                                    startContent={<SearchIcon/>}
+                                    // value={filterValue}
+                                    onClear={() => onClear()}
+                                    // onValueChange={onSearchChange}
+                                />
 
+                                {data !== null ? (
+                                    <Table
+                                        className="table-hover h-3/4-screen w-3/4-screen mx-1 "
+                                        aria-label="Example table with dynamic content"
+                                        color={"default"}
+                                        selectionMode="single"
+                                        fullWidth
+                                    >
+                                        <TableHeader columns={columns}>
+                                            {(column) =>
+                                                <TableColumn
+                                                    key={column.key}
+                                                    width={400}
+                                                >
+                                                    <p className="text-sm capitalize">{column.label}</p>
+                                                </TableColumn>
+                                            }
+                                        </TableHeader>
+                                        <TableBody items={data}>
+                                            {(item) => (
+                                                <TableRow key={item.number}>
+                                                    {columns.map((column) => (
+                                                        <TableCell key={column.key}>
+                                                            {renderCell(item, column.key)}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <div className="flex justify-center items-center">
+                                        <CircularProgress aria-label="Loading..." color="default"/>
+                                    </div>
+
+                                )}
+                            </div>
                         </CardBody>
                     </Card>
                 </div>
@@ -200,11 +286,6 @@ const Home = () => {
                     show={showConfirmation}
                     onHide={handleCloseConfirmation}
                     onConfirm={handleConfirmDelete}
-                />
-                <DeleteConfirmationModal
-                    show={showConfirmation}
-                    onHide={handleCloseConfirmation}
-                    onConfirmDelete={handleConfirmDelete}
                 />
             </div>
         </NextUIProvider>
