@@ -46,6 +46,10 @@ class PersonUpdateSerializer(serializers.ModelSerializer):
             )
         ]
 
+class PersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = ['first_name', 'email']
 
 class ContactRequestCreateSerializer(serializers.Serializer):
     person_requesting_contact_id = serializers.IntegerField(required=True)
@@ -96,8 +100,8 @@ class ContactRequestDeleteSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 
-class PersonSerializer(serializers.ModelSerializer):
+class SimplePersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
-        fields = ['number', 'first_name', 'email']
+        fields = ['number', 'first_name']
 
