@@ -29,6 +29,7 @@ import PersonModal from './components/PersonModal'
 import {VerticalDotsIcon} from "./components/VerticalDotIcon";
 import {SearchIcon} from "./components/SearchIcon";
 import DeleteAlertModal from "./components/DeleteAlertModal";
+import ContactRequestModal from "./components/ContactRequestModal";
 
 
 const Home = () => {
@@ -37,6 +38,8 @@ const Home = () => {
     const [recordToDelete, setRecordToDelete] = useState(null);
 
     const {isOpen: isPersonModalOpen, onOpen: onPersonModalOpen, onClose: onPersonModalClose} = useDisclosure();
+
+    const {isOpen: isContactRequestModalOpen, onOpen: onContactRequestModalOpen, onClose: onContactRequestModalClose} = useDisclosure();
 
     const {isOpen: isDeleteAlertModalOpen, onOpen: onDeleteAlertModalOpen, onClose: onDeleteAlertModalClose} = useDisclosure();
 
@@ -48,6 +51,11 @@ const Home = () => {
 
     function handleEditPerson(personRowValue) {
         onPersonModalOpen()
+        setPersonObjectValue(personRowValue)
+    }
+
+    function handleAddContactRequest(personRowValue) {
+        onContactRequestModalOpen()
         setPersonObjectValue(personRowValue)
     }
 
@@ -132,7 +140,7 @@ const Home = () => {
                                     >
                                         Edytuj Osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/add_contact_request.svg/"/>}
+                                    <DropdownItem onClick={() => handleAddContactRequest(person)} startContent={<Image src="/add_contact_request.svg/"/>}
                                     >
                                         Dodaj preferencję</DropdownItem>
                                 </DropdownSection>
@@ -185,9 +193,9 @@ const Home = () => {
     return (
         <NextUIProvider>
             <div className="bg-pink-200 h-screen w-screen">
-                <Head>
-                    <title>SpeedDatingMatcher</title>
-                </Head>
+                <Head className="shadow-lg" >
+                    <title className="shadow-lg" >SpeedDatingMatcher</title>
+                </Head> 
                 <div className="mx-10 flex">
                     <Image
                         isZoomed
@@ -223,6 +231,13 @@ const Home = () => {
                             onDeleteAlertModalClose={onDeleteAlertModalClose}
                         />
 
+                        <ContactRequestModal
+                            contactRequestObject={personObjectValue}
+                            setContactRequestObject={setPersonObjectValue}
+                            fetchDataOnClose={fetchData}
+                            isContactRequestModalOpen={isContactRequestModalOpen}
+                            onContactRequestModalClose={onContactRequestModalClose}
+                        />
                     </div>
                     <Card
                         shadow="sm"
