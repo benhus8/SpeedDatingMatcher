@@ -4,7 +4,8 @@ from .models import  Person, ContactRequest
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .serializers import PersonCreateSerializer, PersonUpdateSerializer, ContactRequestCreateSerializer, PersonWithPreferredPersonsSerializer, ContactRequestDeleteSerializer
+from .serializers import PersonCreateSerializer, PersonUpdateSerializer, ContactRequestCreateSerializer, \
+    PersonWithPreferredPersonsSerializer, ContactRequestDeleteSerializer, SimplePersonSerializer
 
 
 class PersonCreateView(generics.ListCreateAPIView):
@@ -50,3 +51,18 @@ class ContactRequestCreateView(generics.ListCreateAPIView):
 
 class PersonDeleteView(generics.DestroyAPIView):
     queryset = Person.objects.all()
+
+
+class PossibleContactsAPIView(generics.RetrieveAPIView):
+    queryset = Person.objects.all()
+    serializer_class = SimplePersonSerializer
+    lookup_field = 'number'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            person = self.get_object()
+            possible_contacts = Person.objects.exclude(number=person.number).exclude(preferred_person__person_requesting_contact=person)
+            serializer = self.get_serializer(possible_contacts, many=True)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+        except Person.DoesNotExist:
+            return JsonResponse({"message": "Person not found."}, status=status.HTTP_404_NOT_FOUND)
