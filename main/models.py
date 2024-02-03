@@ -1,5 +1,4 @@
 from django.db import models
-from verify_email import verify_email
 class Person(models.Model):
     number = models.PositiveIntegerField(primary_key=True)
     first_name = models.CharField(max_length=200)
