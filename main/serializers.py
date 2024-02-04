@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-
 from .models import Person, ContactRequest
-
 
 class PersonCreateSerializer(serializers.ModelSerializer):
     def validate_number(self, value):
@@ -27,7 +25,7 @@ class PersonWithPreferredPersonsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
-        fields = ['number', 'first_name', 'email', 'preferred_persons']
+        fields = ['number', 'first_name', 'email', 'email_verified', 'preferred_persons']
 
     def get_preferred_persons(self, obj):
         contact_requests = ContactRequest.objects.filter(person_requesting_contact=obj)
