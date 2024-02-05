@@ -39,7 +39,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
-    path('api/contact-requests/<int:person_requesting_contact_id>', ContactRequestCreateView.as_view(), name='create-contact-request'),
+    path('api/contact-requests/<int:person_requesting_contact_id>/', ContactRequestCreateView.as_view(), name='create-contact-request'),
     path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person'),
     path('api/persons/contacts/', PersonListAPIView.as_view(), name='get-all-persons-with-contacts'),
     path('api/delete-contact-requests/<int:person_requesting_contact_id>/<int:preferred_person_id>/', ContactRequestDeleteView.as_view(), name='delete-person-contact-request'),
