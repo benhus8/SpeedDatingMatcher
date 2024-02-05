@@ -1,5 +1,7 @@
 from django.http import JsonResponse
 from rest_framework import generics
+from rest_framework.generics import CreateAPIView
+
 from .models import Person, ContactRequest
 from rest_framework.response import Response
 from rest_framework import status
@@ -62,16 +64,10 @@ class PersonListAPIView(generics.ListAPIView):
     serializer_class = PersonWithPreferredPersonsSerializer
 
 
-class ContactRequestCreateView(generics.ListCreateAPIView):
+class ContactRequestCreateView(CreateAPIView):
     queryset = ContactRequest.objects.all()
     serializer_class = ContactRequestCreateSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class PersonDeleteView(generics.DestroyAPIView):
