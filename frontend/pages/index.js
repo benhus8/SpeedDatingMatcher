@@ -23,19 +23,22 @@ import {
     Input, useDisclosure
 } from "@nextui-org/react";
 
-import {deleteContactRequest, getAllPersonsWithContactRequests} from "./API/api";
-import ConfirmationModal from './/components/confirmationModal';
+import {deleteContactRequest, getAllPersonsWithContactRequests, getContactRequest, getContactRequests} from "./API/api";
 import PersonModal from './components/PersonModal'
 import {VerticalDotsIcon} from "./components/VerticalDotIcon";
 import {SearchIcon} from "./components/SearchIcon";
 import DeleteAlertModal from "./components/DeleteAlertModal";
 import ContactRequestModal from "./components/ContactRequestModal";
+import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAlertModal";
 
 
 const Home = () => {
     const [data, setData] = useState(null);
+    const [contactRequestData, setContactRequestData] = useState(null);
+    const [personsContactRequestsData, setPersonsContactRequestsData] = useState(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState(null);
+    const [filterValue, setFilterValue] = useState('');
 
     const {isOpen: isPersonModalOpen, onOpen: onPersonModalOpen, onClose: onPersonModalClose} = useDisclosure();
 
@@ -43,11 +46,12 @@ const Home = () => {
 
     const {isOpen: isDeleteAlertModalOpen, onOpen: onDeleteAlertModalOpen, onClose: onDeleteAlertModalClose} = useDisclosure();
 
+    const {isOpen: isDeleteContactRequestAlertModalOpen, onOpen: onDeleteContactRequestAlertModalOpen, onClose: onDeleteContactRequestAlertModalClose} = useDisclosure();
+
     const [personObjectValue, setPersonObjectValue] = useState(undefined)
     const [objectToDelete, setObjectToDelete] = useState(undefined)
 
     const [deleteObjectType, setDeleteObjectType] = useState(undefined)
-
 
     function handleEditPerson(personRowValue) {
         onPersonModalOpen()
@@ -64,17 +68,75 @@ const Home = () => {
         setDeleteObjectType("person")
         onDeleteAlertModalOpen()
     };
+
+    const handleDeleteContactRequest = (person) => {
+        setObjectToDelete(person)
+        setDeleteObjectType("person")
+        onDeleteContactRequestAlertModalOpen()
+    };
+
     const fetchData = async () => {
         setPersonObjectValue(undefined)
         try {
             const result = await getAllPersonsWithContactRequests();
             setData(result);
-        } catch (error) {}
+            return result;
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            throw error;
+        }
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData()
+            .catch(error => {
+                // Handle error here
+                console.error("Error fetching data in useEffect:", error);
+            });
     }, []);
+
+    const fetchPersonsContactRequests = async () => {
+        try {
+            const result = await getContactRequest();
+            setPersonsContactRequestsData(result);
+            return result;
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            throw error;
+        }
+    };
+
+    useEffect(() => {
+        fetchPersonsContactRequests()
+            .catch(error => {
+                // Handle error here
+                console.error("Error fetching data in useEffect:", error);
+            });
+    }, []);
+
+    const fetchContactRequests = async () => {
+        try {
+            if (personObjectValue !== undefined) {
+                const result = await getContactRequests(personObjectValue.number);
+                console.log("API Response:", result);
+                if (result !== undefined) {
+                    setContactRequestData(result);
+                }
+                return result;
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            throw error;
+        }
+    };
+
+    useEffect(() => {
+        fetchContactRequests()
+            .catch(error => {
+                console.error("Error fetching data in useEffect:", error);
+            });
+    }, [personObjectValue]);
+
 
 
     const columns = [
@@ -150,7 +212,7 @@ const Home = () => {
                                         startContent={<Image src="/delete_person_icon.svg/"/>}
                                     >Usuń osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>}>Usuń
+                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} onClick={() => handleDeleteContactRequest(person)}>Usuń
                                         preferencję</DropdownItem>
                                 </DropdownSection>
                             </DropdownMenu>
@@ -165,7 +227,6 @@ const Home = () => {
 
 
     function mapPreferredPersons(preferredPersons) {
-        console.log(preferredPersons)
         if (preferredPersons == null) return ''
         const strings = preferredPersons.map(number => String(number))
         return strings.join(", ")
@@ -186,16 +247,28 @@ const Home = () => {
         }
     };
 
-    const handleCloseConfirmation = () => {
-        setShowConfirmation(false);
-    };
     //TODO add filtering function
+
+    const filteredData = data && data.filter(item =>
+      item.first_name.toLowerCase().includes(filterValue.toLowerCase())
+    );
+
+       const handleSearchChange = (e) => {
+    console.log("Event:", e);
+    if (e.target) {
+        console.log("Filter value:", e.target.value);
+        setFilterValue(e.target.value);
+    }
+};
+
+
+
     return (
         <NextUIProvider>
             <div className="bg-pink-200 h-screen w-screen">
                 <Head className="shadow-lg" >
                     <title className="shadow-lg" >SpeedDatingMatcher</title>
-                </Head> 
+                </Head>
                 <div className="mx-10 flex">
                     <Image
                         isZoomed
@@ -231,10 +304,20 @@ const Home = () => {
                             onDeleteAlertModalClose={onDeleteAlertModalClose}
                         />
 
+                        <DeleteContactRequestAlertModal
+                            objectToDeleteName={deleteObjectType}
+                            objectToDelete={objectToDelete}
+                            fetchDataOnClose={fetchData}
+                            fetchData={fetchPersonsContactRequests}
+                            isDeleteAlertModalOpen={isDeleteContactRequestAlertModalOpen}
+                            onDeleteAlertModalClose={onDeleteContactRequestAlertModalClose}
+                        />
+
                         <ContactRequestModal
                             contactRequestObject={personObjectValue}
                             setContactRequestObject={setPersonObjectValue}
                             fetchDataOnClose={fetchData}
+                            fetchContactRequest={contactRequestData}
                             isContactRequestModalOpen={isContactRequestModalOpen}
                             onContactRequestModalClose={onContactRequestModalClose}
                         />
@@ -251,9 +334,9 @@ const Home = () => {
                                     className="w-full sm:max-w-[25%] mb-3 ml-5"
                                     placeholder="Wyszukaj po imieniu..."
                                     startContent={<SearchIcon/>}
-                                    // value={filterValue}
-                                    onClear={() => onClear()}
-                                    // onValueChange={onSearchChange}
+                                    value={filterValue}
+                                    onClear={() => setFilterValue('')}
+                                    onValueChange={(e) => handleSearchChange(e)}
                                 />
 
                                 {data !== null ? (
@@ -274,7 +357,7 @@ const Home = () => {
                                                 </TableColumn>
                                             }
                                         </TableHeader>
-                                        <TableBody items={data}>
+                                        <TableBody items={filteredData}>
                                             {(item) => (
                                                 <TableRow key={item.number}>
                                                     {columns.map((column) => (
@@ -285,6 +368,7 @@ const Home = () => {
                                                 </TableRow>
                                             )}
                                         </TableBody>
+
                                     </Table>
                                 ) : (
                                     <div className="flex justify-center items-center">
@@ -296,12 +380,6 @@ const Home = () => {
                         </CardBody>
                     </Card>
                 </div>
-
-                <ConfirmationModal
-                    show={showConfirmation}
-                    onHide={handleCloseConfirmation}
-                    onConfirm={handleConfirmDelete}
-                />
             </div>
         </NextUIProvider>
     );

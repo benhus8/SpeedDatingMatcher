@@ -80,3 +80,35 @@ export const createContactRequest = async (data) => {
     console.error(error);
   }
 };
+
+export const getContactRequest = async () => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/contact-requests`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return response.json();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const getContactRequests = async (personNumber) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/possible-contacts/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+
+    const responseData = await response.json();
+
+    return responseData;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
