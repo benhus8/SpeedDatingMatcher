@@ -7,9 +7,11 @@ import {
   ModalFooter,
   Button,
   DropdownMenu,
-  Dropdown, DropdownItem, DropdownTrigger,
+  Dropdown,
+  DropdownItem,
+  DropdownTrigger,
 } from "@nextui-org/react";
-import { createContactRequest } from "../API/api";
+import { createContactRequest, getContactRequests } from "../API/api";
 
 export default function ContactRequestModal({
   contactRequestObject,
@@ -17,75 +19,100 @@ export default function ContactRequestModal({
   fetchDataOnClose,
   isContactRequestModalOpen,
   onContactRequestModalClose,
+  fetchContactRequest,
 }) {
-  const [invalidNumber, setInvalidNumber] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [values, setValues] = useState({ number: "" });
+  
+  const [selectedKeys, setSelectedKeys] = React.useState(new Set(["text"]));
 
-  function handleClose() {
+  const selectedValue = React.useMemo(
+    () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
+    [selectedKeys]
+  );
+
+
+  const handleClose = () => {
     setContactRequestObject(undefined);
     onContactRequestModalClose();
-  }
+  };
 
-  useEffect(() => {
-    setErrorMessage("");
-    setValues({ number: "" }); // Reset values when modal opens
-  }, [isContactRequestModalOpen]);
-
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const responseData = await createContactRequest(values);
-      if (responseData["non_field_errors"]) {
-        const errorString = responseData["non_field_errors"].join("\n");
-        if (errorString.includes("email must make a unique set")) {
-          setErrorMessage("Osoba o takim email-u już istnieje!");
-        }
-      } else {
+      if (selectedContact) {
+        const { number: preferredPersonId } = selectedContact;
+        const { number: personRequestingContactId } = contactRequestObject;
+        await createContactRequest({
+          person_requesting_contact_id: personRequestingContactId,
+          preferred_person_id: preferredPersonId
+        });
         fetchDataOnClose();
         onContactRequestModalClose();
         setContactRequestObject(undefined);
+      } else {
+        setErrorMessage("Wybierz numer preferowanej osoby");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
   return (
-    <>
-      <Modal isOpen={isContactRequestModalOpen} onClose={handleClose} placement="top-center">
-        <ModalContent>
-          <form onSubmit={handleSubmit}>
-            <ModalHeader className="flex flex-col gap-1">Dodaj preferencję</ModalHeader>
-            <ModalBody>
-            <Dropdown >
+    <Modal
+      isOpen={isContactRequestModalOpen}
+      onClose={handleClose}
+      placement="top-center"
+    >
+      <ModalContent>
+        <form onSubmit={handleSubmit}>
+          <ModalHeader className="flex flex-col gap-1">
+            Dodaj preferencję
+          </ModalHeader>
+          <ModalBody>
+            <Dropdown>
               <DropdownTrigger>
-                <Button
-                  variant="bordered"
-                >
+                <Button variant="bordered" className="capitalize">
                   Wybierz numer preferowanej osoby
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu aria-label="Example with disabled actions">
-                <DropdownItem key="1">1</DropdownItem>
-                <DropdownItem key="2">2</DropdownItem>
-                <DropdownItem key="3">3</DropdownItem>
+              <DropdownMenu
+                  aria-label="Lista kontaktów"
+                  selectionMode="multiple"
+                  selectedKeys={selectedKeys}
+                  onSelectionChange={setSelectedKeys}
+                  closeOnSelect={false}
+                  disallowEmptySelection>
+
+                {fetchContactRequest && fetchContactRequest.length > 0 ? (
+                  fetchContactRequest.map((contact) => (
+                    <DropdownItem
+                      key={contact.number}
+                      onClick={() => setSelectedContact(contact)}
+                    >
+                      {contact.number}
+                      {' - '}
+                      {contact.first_name}
+                    </DropdownItem>
+                  ))
+                ) : (
+                  <DropdownItem disabled>Brak danych</DropdownItem>
+                )}
               </DropdownMenu>
             </Dropdown>
-
-
-              {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-            </ModalBody>
-            <ModalFooter>
-              <Button color="danger" variant="flat" onClick={handleClose}>
-                Anuluj
-              </Button>
-              <Button className="bg-green-200" disabled={invalidNumber} type="submit">
-                Zapisz
-              </Button>
-            </ModalFooter>
-          </form>
-        </ModalContent>
-      </Modal>
-    </>
+            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="flat" onClick={handleClose}>
+              Anuluj
+            </Button>
+            <Button className="bg-green-200" type="submit">
+              Zapisz
+            </Button>
+          </ModalFooter>
+        </form>
+      </ModalContent>
+    </Modal>
   );
 }
+
