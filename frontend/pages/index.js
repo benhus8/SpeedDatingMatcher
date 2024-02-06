@@ -20,10 +20,10 @@ import {
     DropdownMenu,
     DropdownItem,
     DropdownSection,
-    Input, useDisclosure
+    Input, useDisclosure, Chip
 } from "@nextui-org/react";
 
-import {deleteContactRequest, getAllPersonsWithContactRequests, getContactRequest, getContactRequests} from "./API/api";
+import {deleteContactRequest, getAllPersonsWithContactRequests, getPersonsContactRequest, getContactRequests} from "./API/api";
 import PersonModal from './components/PersonModal'
 import {VerticalDotsIcon} from "./components/VerticalDotIcon";
 import {SearchIcon} from "./components/SearchIcon";
@@ -35,9 +35,6 @@ import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAle
 const Home = () => {
     const [data, setData] = useState(null);
     const [contactRequestData, setContactRequestData] = useState(null);
-    const [personsContactRequestsData, setPersonsContactRequestsData] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [recordToDelete, setRecordToDelete] = useState(null);
     const [filterValue, setFilterValue] = useState('');
 
     const {isOpen: isPersonModalOpen, onOpen: onPersonModalOpen, onClose: onPersonModalClose} = useDisclosure();
@@ -52,6 +49,7 @@ const Home = () => {
     const [objectToDelete, setObjectToDelete] = useState(undefined)
 
     const [deleteObjectType, setDeleteObjectType] = useState(undefined)
+    const [preferredPersons, setPreferredPersons] = useState([])
 
     function handleEditPerson(personRowValue) {
         onPersonModalOpen()
@@ -69,10 +67,10 @@ const Home = () => {
         onDeleteAlertModalOpen()
     };
 
-    const handleDeleteContactRequest = (person) => {
-        setObjectToDelete(person)
-        setDeleteObjectType("person")
-        onDeleteContactRequestAlertModalOpen()
+    const handleDeleteContactRequest = (personRowValue) => {
+    setPreferredPersons(personRowValue.preferred_persons);
+    setObjectToDelete(personRowValue);
+    onDeleteContactRequestAlertModalOpen();
     };
 
     const fetchData = async () => {
@@ -89,25 +87,6 @@ const Home = () => {
 
     useEffect(() => {
         fetchData()
-            .catch(error => {
-                // Handle error here
-                console.error("Error fetching data in useEffect:", error);
-            });
-    }, []);
-
-    const fetchPersonsContactRequests = async () => {
-        try {
-            const result = await getContactRequest();
-            setPersonsContactRequestsData(result);
-            return result;
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            throw error;
-        }
-    };
-
-    useEffect(() => {
-        fetchPersonsContactRequests()
             .catch(error => {
                 // Handle error here
                 console.error("Error fetching data in useEffect:", error);
@@ -153,6 +132,10 @@ const Home = () => {
             label: "e-mail",
         },
         {
+            key: "email_verified",
+            label: "weryfikacja",
+        },
+        {
             key: "preferred_persons",
             label: "Preferowane osoby",
         },
@@ -164,7 +147,6 @@ const Home = () => {
 
     const renderCell = React.useCallback((person, columnKey) => {
         const cellValue = person[columnKey];
-
         switch (columnKey) {
             case "number":
                 return (
@@ -177,6 +159,12 @@ const Home = () => {
             case "email":
                 return (
                     <p className="text-bold text-sm">{cellValue}</p>
+                );
+           case "email_verified":
+                return (
+                    <Chip className="capitalize" color={cellValue ? "success" : "danger"} size="sm" variant="flat">
+                        {cellValue ? "Zweryfikowany" : "Nie zweryfikowany"}
+                    </Chip>
                 );
             case "preferred_persons":
                 return (
@@ -202,7 +190,10 @@ const Home = () => {
                                     >
                                         Edytuj Osobę
                                     </DropdownItem>
-                                    <DropdownItem onClick={() => handleAddContactRequest(person)} startContent={<Image src="/add_contact_request.svg/"/>}
+                                    <DropdownItem onClick={() =>
+                                        handleAddContactRequest(person)
+                                        }
+                                                  startContent={<Image src="/add_contact_request.svg/"/>}
                                     >
                                         Dodaj preferencję</DropdownItem>
                                 </DropdownSection>
@@ -212,7 +203,8 @@ const Home = () => {
                                         startContent={<Image src="/delete_person_icon.svg/"/>}
                                     >Usuń osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} onClick={() => handleDeleteContactRequest(person)}>Usuń
+                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} onClick={() =>
+                                        handleDeleteContactRequest(person)}>Usuń
                                         preferencję</DropdownItem>
                                 </DropdownSection>
                             </DropdownMenu>
@@ -225,28 +217,11 @@ const Home = () => {
     }, []);
 
 
-
     function mapPreferredPersons(preferredPersons) {
         if (preferredPersons == null) return ''
         const strings = preferredPersons.map(number => String(number))
         return strings.join(", ")
     }
-
-    const handleConfirmDelete = async (personIdToDelete) => {
-        try {
-            const {personRequestingContactId, preferredPersonId} = recordToDelete;
-            if (personIdToDelete === preferredPersonId) {
-                await deleteContactRequest(personRequestingContactId, preferredPersonId);
-                setData(await getAllPersonsWithContactRequests());
-            } else {
-                console.error('Numer osoby do usunięcia nie pasuje do rekordu.');
-            }
-            setShowConfirmation(false);
-        } catch (error) {
-            console.error('Błąd podczas usuwania rekordu:', error);
-        }
-    };
-
     //TODO add filtering function
 
     const filteredData = data && data.filter(item =>
@@ -260,8 +235,6 @@ const Home = () => {
         setFilterValue(e.target.value);
     }
 };
-
-
 
     return (
         <NextUIProvider>
@@ -305,10 +278,9 @@ const Home = () => {
                         />
 
                         <DeleteContactRequestAlertModal
-                            objectToDeleteName={deleteObjectType}
+                            objectToDeleteName={preferredPersons}
                             objectToDelete={objectToDelete}
                             fetchDataOnClose={fetchData}
-                            fetchData={fetchPersonsContactRequests}
                             isDeleteAlertModalOpen={isDeleteContactRequestAlertModalOpen}
                             onDeleteAlertModalClose={onDeleteContactRequestAlertModalClose}
                         />
