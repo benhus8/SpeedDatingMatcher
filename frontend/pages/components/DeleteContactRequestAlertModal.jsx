@@ -15,67 +15,80 @@ export default function DeleteContactRequestAlertModal({
     isDeleteAlertModalOpen,
     onDeleteAlertModalClose,
     fetchDataOnClose,
-    fetchData,
     objectToDeleteName,
-    objectToDelete}) {
-
+    objectToDelete
+}) {
     const [selectedContact, setSelectedContact] = useState(null);
 
-     const handleDelete = async()=> {
-        try {
-            const { number: preferredPersonId } = selectedContact;
+const handleDelete = async () => {
+    try {
+        if (selectedContact) {
             const { number: personRequestingContactId } = objectToDelete;
-            await deleteContactRequest({
-                person_requesting_contact_id: personRequestingContactId,
-                preferred_person_id: preferredPersonId
-            });
-            fetchDataOnClose()
+            await deleteContactRequest(
+                personRequestingContactId,
+                selectedContact
+            );
+            fetchDataOnClose();
             onDeleteAlertModalClose();
-        } catch (error) {
-            console.log(error)
+        } else {
+            console.error("Selected contact is null");
         }
+    } catch (error) {
+        console.log(error);
     }
-console.log(fetchData)
-    return (<>
-            <Modal isOpen={isDeleteAlertModalOpen} onClose={onDeleteAlertModalClose} placement="top-center">
-                <ModalContent>
-                    <ModalHeader
-                        className="flex flex-col gap-1">{objectToDeleteName === "person" ? 'Usuń osobę' : 'Usuń pereferencję osoby'}</ModalHeader>
-                    <ModalBody>
-                        {objectToDeleteName === "person" ?
-                                (<p1> Czy napewno chcesz usunąć preferencję?</p1>)
-                            : (<p1> Delete contact request</p1>)
-                        }
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button variant="bordered" className="capitalize">
-                              Wybierz numer preferowanej osoby
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
-                              aria-label="Lista kontaktów"
-                              closeOnSelect={false}
-                          >
-                            {fetchData && fetchData.length > 0 ? (
-                              fetchData.map((contact) => (
-                                <DropdownItem
-                                  key={contact.preferred_person_id}
-                                  onClick={() => setSelectedContact(contact)}
+};
+
+
+    return (
+        <>
+            {isDeleteAlertModalOpen && (
+                <Modal
+                    isOpen={isDeleteAlertModalOpen}
+                    onClose={onDeleteAlertModalClose}
+                    placement="top-center"
+                >
+                    <ModalContent>
+                        <ModalHeader className="flex flex-col gap-1">
+                            Usuń preferencję osoby
+                        </ModalHeader>
+                        <ModalBody>
+                            <p>Czy na pewno chcesz usunąć preferencję?</p>
+                            <Dropdown>
+                                <DropdownTrigger>
+                                    <Button variant="bordered" className="capitalize">
+                                        Wybierz preferowaną osobę
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    aria-label="Lista kontaktów"
+                                    closeOnSelect={true}
                                 >
-                                  {contact.preferred_person_id}
-                                </DropdownItem>
-                              ))
-                            ) : (
-                              <DropdownItem disabled>Brak danych</DropdownItem>
-                            )}
-                          </DropdownMenu>
-                        </Dropdown>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="danger" variant="flat" onPress={handleDelete}>Usuń</Button>
-                        <Button color="default" onPress={onDeleteAlertModalClose}>Anuluj</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>);
+                                    {objectToDeleteName && objectToDeleteName.length > 0 ? (
+                                        objectToDeleteName.map((person, index) => (
+                                            <DropdownItem
+                                                key={index}
+                                                onClick={() => setSelectedContact(person)}
+                                            >
+                                                {person}
+                                            </DropdownItem>
+                                        ))
+                                    ) : (
+                                        <DropdownItem disabled>Brak danych</DropdownItem>
+                                    )}
+                                </DropdownMenu>
+                            </Dropdown>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="danger" variant="flat" onPress={handleDelete}>
+                                Usuń
+                            </Button>
+                            <Button color="default" onPress={onDeleteAlertModalClose}>
+                                Anuluj
+                            </Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
+            )}
+        </>
+    );
 }
