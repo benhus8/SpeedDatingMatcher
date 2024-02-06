@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Modal,
   ModalContent,
@@ -6,12 +6,12 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  DropdownMenu,
   Dropdown,
   DropdownItem,
   DropdownTrigger,
+  DropdownMenu
 } from "@nextui-org/react";
-import { createContactRequest, getContactRequests } from "../API/api";
+import { createContactRequest } from "../API/api";
 
 export default function ContactRequestModal({
   contactRequestObject,
@@ -21,18 +21,11 @@ export default function ContactRequestModal({
   onContactRequestModalClose,
   fetchContactRequest,
 }) {
-  const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedContactIds, setSelectedContactIds] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  
-  const [selectedKeys, setSelectedKeys] = React.useState(new Set(["text"]));
-
-  const selectedValue = React.useMemo(
-    () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-    [selectedKeys]
-  );
-
 
   const handleClose = () => {
+    setSelectedContactIds([]);
     setContactRequestObject(undefined);
     onContactRequestModalClose();
   };
@@ -40,13 +33,12 @@ export default function ContactRequestModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (selectedContact) {
-        const { number: preferredPersonId } = selectedContact;
-        const { number: personRequestingContactId } = contactRequestObject;
-        await createContactRequest({
-          person_requesting_contact_id: personRequestingContactId,
-          preferred_person_id: preferredPersonId
-        });
+      if (selectedContactIds.length > 0) {
+        const person_requesting_contact_id = contactRequestObject.number;
+        const requestData = {
+          preferred_persons: selectedContactIds
+        };
+        await createContactRequest(requestData, person_requesting_contact_id);
         fetchDataOnClose();
         onContactRequestModalClose();
         setContactRequestObject(undefined);
@@ -58,7 +50,7 @@ export default function ContactRequestModal({
     }
   };
 
-  return (
+ return (
     <Modal
       isOpen={isContactRequestModalOpen}
       onClose={handleClose}
@@ -77,22 +69,24 @@ export default function ContactRequestModal({
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
-                  aria-label="Lista kontaktów"
-                  selectionMode="multiple"
-                  selectedKeys={selectedKeys}
-                  onSelectionChange={setSelectedKeys}
-                  closeOnSelect={false}
-                  disallowEmptySelection>
-
+                aria-label="Lista kontaktów"
+                selectionMode="multiple"
+                closeOnSelect={false}
+                disallowEmptySelection
+              >
                 {fetchContactRequest && fetchContactRequest.length > 0 ? (
                   fetchContactRequest.map((contact) => (
                     <DropdownItem
                       key={contact.number}
-                      onClick={() => setSelectedContact(contact)}
+                      onClick={() => {
+                        if (selectedContactIds.includes(contact.number)) {
+                          setSelectedContactIds(prevIds => prevIds.filter(id => id !== contact.number));
+                        } else {
+                          setSelectedContactIds(prevIds => [...prevIds, contact.number]);
+                        }
+                      }}
                     >
-                      {contact.number}
-                      {' - '}
-                      {contact.first_name}
+                      {contact.number} - {contact.first_name}
                     </DropdownItem>
                   ))
                 ) : (
@@ -115,4 +109,3 @@ export default function ContactRequestModal({
     </Modal>
   );
 }
-
