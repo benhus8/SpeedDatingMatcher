@@ -222,19 +222,16 @@ const Home = () => {
         const strings = preferredPersons.map(number => String(number))
         return strings.join(", ")
     }
-    //TODO add filtering function
+
+    const handleSearchChange = (searchValue) => {
+        const lowercaseValue = searchValue.toLowerCase();
+        console.log("Filter value:", lowercaseValue);
+        setFilterValue(lowercaseValue);
+    };
 
     const filteredData = data && data.filter(item =>
-      item.first_name.toLowerCase().includes(filterValue.toLowerCase())
+      item.first_name.toLowerCase().startsWith(filterValue.toLowerCase())
     );
-
-       const handleSearchChange = (e) => {
-    console.log("Event:", e);
-    if (e.target) {
-        console.log("Filter value:", e.target.value);
-        setFilterValue(e.target.value);
-    }
-};
 
     return (
         <NextUIProvider>
@@ -308,7 +305,7 @@ const Home = () => {
                                     startContent={<SearchIcon/>}
                                     value={filterValue}
                                     onClear={() => setFilterValue('')}
-                                    onValueChange={(e) => handleSearchChange(e)}
+                                    onValueChange={(value) => handleSearchChange(value)}
                                 />
 
                                 {data !== null ? (
