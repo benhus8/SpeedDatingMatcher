@@ -198,13 +198,22 @@ const Home = () => {
                 </div>
 
                 <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
-                    <div className=" ml-10 mb-3">
+                    <div className=" ml-10 mb-3 ">
                         <Button onPress={onPersonModalOpen}
                                 className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
                                 variant="faded"
                                 startContent={<Image src="/add_person_icon.svg/"/>}
                         >
                             Dodaj osobę
+                        </Button>
+                        {//TODO add onPress handle
+                        }
+                        <Button
+                                className="bg-white text-black shadow-lg from-pink-500 border-pink-300 ml-2"
+                                variant="faded"
+                                startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5"/>}
+                        >
+                            Wyślij listy
                         </Button>
                         <PersonModal
                             mode={personObjectValue === undefined ? "add" : "edit"}
