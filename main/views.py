@@ -4,17 +4,16 @@ from django.http import JsonResponse
 from rest_framework import generics
 from django.conf import settings
 from bs4 import BeautifulSoup
+from rest_framework.generics import CreateAPIView
 from YouveGotMail import settings
 from .models import  Person, ContactRequest
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from validate_email import validate_email
 from .serializers import PersonCreateSerializer, PersonUpdateSerializer, ContactRequestCreateSerializer, \
     PersonWithPreferredPersonsSerializer, ContactRequestDeleteSerializer, SimplePersonSerializer
 from validate_email import validate_email
-
 
 
 H1_TAG_STYLE = """Margin:0;line-height:22px;mso-line-height-rule:exactly;font-family:'trebuchet ms', 'lucida grande', 'lucida sans unicode', 'lucida sans', tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:bold;color:#FE4642"""
@@ -109,7 +108,7 @@ def send_email(request):
         ul_tag = soup.find('ul', {'id': 'name-list'})
 
         msg = EmailMessage()
-        msg["Subject"] = "Wyniki Speed Dating! dla numeru" + key.number
+        msg["Subject"] = "Wyniki Speed Dating dla numeru " + str(key.number)
         msg["From"] = settings.EMAIL_HOST_USER
         msg["To"] = key.email
 
