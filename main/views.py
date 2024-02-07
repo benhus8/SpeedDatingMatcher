@@ -23,7 +23,10 @@ class PersonCreateView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(email_verified=is_valid)
+
+        email_verified = is_valid if is_valid is not None else False
+
+        serializer.save(email_verified=email_verified)
 
         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
