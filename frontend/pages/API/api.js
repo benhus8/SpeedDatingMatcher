@@ -1,5 +1,6 @@
+const defaultPath = 'http://127.0.0.1:8000'
 export async function getAllPersonsWithContactRequests() {
-  const res = await fetch(' http://127.0.0.1:8000/api/persons/contacts/')
+  const res = await fetch(defaultPath + '/api/persons/contacts/')
 
   if (!res.ok) {
     throw new Error('Failed to fetch data')
@@ -8,15 +9,9 @@ export async function getAllPersonsWithContactRequests() {
   return res.json()
 }
 
-export default async function Page() {
-  const data = await getAllPersonsWithContactRequests()
-
-  return <main></main>
-}
-
 export const deleteContactRequest = async (personRequestingContactId, preferredPersonId) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/delete-contact-requests/${personRequestingContactId}/${preferredPersonId}`, {
+    const response = await fetch(defaultPath + `/api/delete-contact-requests/${personRequestingContactId}/${preferredPersonId}`, {
       method: 'DELETE',
     });
     return response.json();
@@ -27,7 +22,7 @@ export const deleteContactRequest = async (personRequestingContactId, preferredP
 
 export const deletePerson = async (personNumber) => {
   try {
-    await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/delete/`, {
+    await fetch(defaultPath + `/api/persons/${personNumber}/delete/`, {
       method: 'DELETE',
     });
   } catch (error) {
@@ -37,7 +32,7 @@ export const deletePerson = async (personNumber) => {
 
 export const createPerson = async (data) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/persons`, {
+    const response = await fetch(defaultPath + `/api/persons`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -52,7 +47,7 @@ export const createPerson = async (data) => {
 
 export const editPerson = async (data, personNumber) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/`, {
+    const response = await fetch(defaultPath + `/api/persons/${personNumber}/`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
