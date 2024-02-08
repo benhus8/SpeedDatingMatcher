@@ -1,5 +1,6 @@
 const defaultPath = 'http://127.0.0.1:8000'
 
+export default defaultPath;
 export async function getAllPersonsWithContactRequests(setIsLoggedIn) {
   try {
     const res = await fetch(defaultPath +'/api/persons/contacts/', {
