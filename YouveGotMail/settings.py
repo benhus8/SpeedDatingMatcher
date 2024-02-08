@@ -62,7 +62,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://'+ os.environ['sdm-backend.azurewebsites.net']]
+CSRF_TRUSTED_ORIGINS = ['https://'+ os.environ['WEBSITE_HOSTNAME']]
 
 ROOT_URLCONF = 'YouveGotMail.urls'
 
