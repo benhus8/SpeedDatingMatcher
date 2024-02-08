@@ -5,7 +5,6 @@ import {
     Button,
     Card,
     CardBody,
-    getKeyValue,
     Image,
     NextUIProvider,
     Table,
@@ -23,7 +22,7 @@ import {
     Input, useDisclosure, Chip
 } from "@nextui-org/react";
 
-import {deleteContactRequest, getAllPersonsWithContactRequests, getPersonsContactRequest, getContactRequests} from "./API/api";
+import {getAllPersonsWithContactRequests, getContactRequests} from "./API/api";
 import PersonModal from './components/PersonModal'
 import {VerticalDotsIcon} from "./components/VerticalDotIcon";
 import {SearchIcon} from "./components/SearchIcon";
@@ -31,9 +30,12 @@ import DeleteAlertModal from "./components/DeleteAlertModal";
 import ContactRequestModal from "./components/ContactRequestModal";
 import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAlertModal";
 import LoginModal from "./components/LoginModal";
+import SendEmailsAlertModal from "./components/SendEmailsAlertModal";
+import { Grandstander   } from "@next/font/google";
 
-
+const font = Grandstander ({ subsets: ['latin'] })
 const Home = () => {
+
     const [data, setData] = useState(null);
     const [contactRequestData, setContactRequestData] = useState(null);
     const [filterValue, setFilterValue] = useState('');
@@ -43,6 +45,8 @@ const Home = () => {
     const {isOpen: isContactRequestModalOpen, onOpen: onContactRequestModalOpen, onClose: onContactRequestModalClose} = useDisclosure();
 
     const {isOpen: isDeleteAlertModalOpen, onOpen: onDeleteAlertModalOpen, onClose: onDeleteAlertModalClose} = useDisclosure();
+
+    const {isOpen: isSendEmailsAlertModalOpen, onOpen: onSendEmailsAlertModalOpen, onClose: onSendEmailsAlertModalClose} = useDisclosure();
 
     const {isOpen: isDeleteContactRequestAlertModalOpen, onOpen: onDeleteContactRequestAlertModalOpen, onClose: onDeleteContactRequestAlertModalClose} = useDisclosure();
 
@@ -185,24 +189,25 @@ const Home = () => {
                             </DropdownTrigger>
                             <DropdownMenu>
                                 <DropdownSection showDivider>
-                                    <DropdownItem onClick={() => handleEditPerson(person)} startContent={<Image src="/edit_person_icon.svg/"/> }
+                                    <DropdownItem onClick={() => handleEditPerson(person)} startContent={<Image src="/edit_person_icon.svg/" aria-label="edit-person"/> }
                                     >
                                         Edytuj Osobę
                                     </DropdownItem>
                                     <DropdownItem onClick={() =>
                                         handleAddContactRequest(person)
                                         }
-                                                  startContent={<Image src="/add_contact_request.svg/"/>}
+                                                  startContent={<Image src="/add_contact_request.svg/" aria-label="add-contact-request"/>}
                                     >
                                         Dodaj preferencję</DropdownItem>
                                 </DropdownSection>
                                 <DropdownSection>
                                     <DropdownItem
                                         onClick={() => handleDeletePerson(person)}
-                                        startContent={<Image src="/delete_person_icon.svg/"/>}
+                                        startContent={<Image src="/delete_person_icon.svg/" aria-label="delete-person"/>}
                                     >Usuń osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} onClick={() =>
+                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} aria-label="delete-contact-request"
+                                                  onClick={() =>
                                         handleDeleteContactRequest(person)}>Usuń
                                         preferencję</DropdownItem>
                                 </DropdownSection>
@@ -237,14 +242,19 @@ const Home = () => {
             <div className="bg-pink-200 h-screen w-screen">
                 <Head className="shadow-lg" >
                     <title className="shadow-lg" >SpeedDatingMatcher</title>
+                    <link rel="icon" href="/images/favicon.ico" sizes="any"/>
                 </Head>
                 <div className="mx-10 flex">
                     <Image
                         isZoomed
                         alt="MailIcon"
                         src="/mail_icon.png"
+                        aria-label="speed-dating"
                     />
-                    <h1 className="text-white mt-10 text-xl font-bold">Speed Dating Matcher</h1>
+                    <div className="text-white mt-10 text-xl" >
+                        <h1 className={font.className} style={{ fontSize: '2rem' }}>Speed Dating Matcher</h1>
+                    </div>
+
                 </div>
 
                 <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
@@ -252,19 +262,21 @@ const Home = () => {
                         <Button onPress={onPersonModalOpen}
                                 className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
                                 variant="faded"
-                                startContent={<Image src="/add_person_icon.svg/"/>}
+                                startContent={<Image src="/add_person_icon.svg/" aria-label="add-person-button"/>}
                         >
                             Dodaj osobę
                         </Button>
-                        {//TODO add onPress handle
-                        }
-                        <Button
+                        <Button onPress={onSendEmailsAlertModalOpen}
                                 className="bg-white text-black shadow-lg from-pink-500 border-pink-300 ml-2"
                                 variant="faded"
-                                startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5"/>}
+                                startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5" aria-label="send-emails"/>}
                         >
                             Wyślij listy
                         </Button>
+                        <SendEmailsAlertModal
+                            isSendEmailsAlertModalOpen={isSendEmailsAlertModalOpen}
+                            onSendEmailsAlertModalClose={onSendEmailsAlertModalClose}
+                        />
                         <LoginModal
                                 fetchDataFunction={fetchData}
                                 isLoginModalOpen={isLoginModalOpen}
