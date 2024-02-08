@@ -26,9 +26,7 @@ export default function DeleteAlertModal({
                 <ModalHeader
                     className="flex flex-col gap-1">{objectToDeleteName === "person" ? 'Usuń osobę' : 'Usuń pereferencję osoby'}</ModalHeader>
                 <ModalBody>
-                    {objectToDeleteName === "person" ? (
-                        <p1> Usunięcie osoby spowoduje usunięcie wszystkich jej preferencji oraz preferencji, w których
-                            jest zawarta. Usunąć osobę?</p1>) : (<p1> Delete constact request</p1>)}
+                    {objectToDeleteName === "person" ? ("Usunięcie osoby spowoduje usunięcie wszystkich jej preferencji oraz preferencji, w których jest zawarta. Usunąć osobę?") : ("Delete constact request")}
                 </ModalBody>
                 <ModalFooter>
                     <Button color="danger" variant="flat" onPress={handleDelete}>Usuń</Button>
