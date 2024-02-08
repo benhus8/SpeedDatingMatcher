@@ -5,8 +5,15 @@ import {
     Button,
     Card,
     CardBody,
-    getKeyValue,
+    Chip,
+    CircularProgress,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownSection,
+    DropdownTrigger,
     Image,
+    Input,
     NextUIProvider,
     Table,
     TableBody,
@@ -14,16 +21,11 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    CircularProgress,
-    DropdownTrigger,
-    Dropdown,
-    DropdownMenu,
-    DropdownItem,
-    DropdownSection,
-    Input, useDisclosure, Chip
+    Tooltip,
+    useDisclosure
 } from "@nextui-org/react";
 
-import {deleteContactRequest, getAllPersonsWithContactRequests, getPersonsContactRequest, getContactRequests} from "./API/api";
+import {getAllPersonsWithContactRequests, getContactRequests} from "./API/api";
 import PersonModal from './components/PersonModal'
 import {VerticalDotsIcon} from "./components/VerticalDotIcon";
 import {SearchIcon} from "./components/SearchIcon";
@@ -31,20 +33,41 @@ import DeleteAlertModal from "./components/DeleteAlertModal";
 import ContactRequestModal from "./components/ContactRequestModal";
 import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAlertModal";
 import LoginModal from "./components/LoginModal";
+import SendEmailsAlertModal from "./components/SendEmailsAlertModal";
+import {Grandstander} from "@next/font/google";
 
-
+const font = Grandstander({subsets: ['latin']})
 const Home = () => {
+
     const [data, setData] = useState(null);
     const [contactRequestData, setContactRequestData] = useState(null);
     const [filterValue, setFilterValue] = useState('');
 
     const {isOpen: isPersonModalOpen, onOpen: onPersonModalOpen, onClose: onPersonModalClose} = useDisclosure();
 
-    const {isOpen: isContactRequestModalOpen, onOpen: onContactRequestModalOpen, onClose: onContactRequestModalClose} = useDisclosure();
+    const {
+        isOpen: isContactRequestModalOpen,
+        onOpen: onContactRequestModalOpen,
+        onClose: onContactRequestModalClose
+    } = useDisclosure();
 
-    const {isOpen: isDeleteAlertModalOpen, onOpen: onDeleteAlertModalOpen, onClose: onDeleteAlertModalClose} = useDisclosure();
+    const {
+        isOpen: isDeleteAlertModalOpen,
+        onOpen: onDeleteAlertModalOpen,
+        onClose: onDeleteAlertModalClose
+    } = useDisclosure();
 
-    const {isOpen: isDeleteContactRequestAlertModalOpen, onOpen: onDeleteContactRequestAlertModalOpen, onClose: onDeleteContactRequestAlertModalClose} = useDisclosure();
+    const {
+        isOpen: isSendEmailsAlertModalOpen,
+        onOpen: onSendEmailsAlertModalOpen,
+        onClose: onSendEmailsAlertModalClose
+    } = useDisclosure();
+
+    const {
+        isOpen: isDeleteContactRequestAlertModalOpen,
+        onOpen: onDeleteContactRequestAlertModalOpen,
+        onClose: onDeleteContactRequestAlertModalClose
+    } = useDisclosure();
 
     const [personObjectValue, setPersonObjectValue] = useState(undefined)
     const [objectToDelete, setObjectToDelete] = useState(undefined)
@@ -72,9 +95,9 @@ const Home = () => {
     };
 
     const handleDeleteContactRequest = (personRowValue) => {
-    setPreferredPersons(personRowValue.preferred_persons);
-    setObjectToDelete(personRowValue);
-    onDeleteContactRequestAlertModalOpen();
+        setPreferredPersons(personRowValue.preferred_persons);
+        setObjectToDelete(personRowValue);
+        onDeleteContactRequestAlertModalOpen();
     };
 
     const fetchData = async () => {
@@ -114,7 +137,6 @@ const Home = () => {
                 console.error("Error fetching data in useEffect:", error);
             });
     }, [personObjectValue]);
-
 
 
     const columns = [
@@ -159,11 +181,17 @@ const Home = () => {
                 return (
                     <p className="text-bold text-sm">{cellValue}</p>
                 );
-           case "email_verified":
+            case "email_verified":
                 return (
-                    <Chip className="capitalize" color={cellValue ? "success" : "danger"} size="sm" variant="flat">
-                        {cellValue ? "Zweryfikowany" : "Nie zweryfikowany"}
-                    </Chip>
+                    <Tooltip
+                        showArrow
+                        placement="bottom"
+                        content={cellValue ? "Email istnieje :)" : ("Mamy podejrzenia, że email może nie istnieć :( Upewnij się, czy pole e-mail przyjmuje poprawną wartość")}
+                    >
+                        <Chip className="capitalize" color={cellValue ? "success" : "danger"} size="sm" variant="flat">
+                            {cellValue ? "Zweryfikowany" : "Nie zweryfikowany"}
+                        </Chip>
+                    </Tooltip>
                 );
             case "preferred_persons":
                 return (
@@ -185,25 +213,31 @@ const Home = () => {
                             </DropdownTrigger>
                             <DropdownMenu>
                                 <DropdownSection showDivider>
-                                    <DropdownItem onClick={() => handleEditPerson(person)} startContent={<Image src="/edit_person_icon.svg/"/> }
+                                    <DropdownItem onClick={() => handleEditPerson(person)}
+                                                  startContent={<Image src="/edit_person_icon.svg/"
+                                                                       aria-label="edit-person"/>}
                                     >
                                         Edytuj Osobę
                                     </DropdownItem>
                                     <DropdownItem onClick={() =>
                                         handleAddContactRequest(person)
-                                        }
-                                                  startContent={<Image src="/add_contact_request.svg/"/>}
+                                    }
+                                                  startContent={<Image src="/add_contact_request.svg/"
+                                                                       aria-label="add-contact-request"/>}
                                     >
                                         Dodaj preferencję</DropdownItem>
                                 </DropdownSection>
                                 <DropdownSection>
                                     <DropdownItem
                                         onClick={() => handleDeletePerson(person)}
-                                        startContent={<Image src="/delete_person_icon.svg/"/>}
+                                        startContent={<Image src="/delete_person_icon.svg/"
+                                                             aria-label="delete-person"/>}
                                     >Usuń osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} onClick={() =>
-                                        handleDeleteContactRequest(person)}>Usuń
+                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>}
+                                                  aria-label="delete-contact-request"
+                                                  onClick={() =>
+                                                      handleDeleteContactRequest(person)}>Usuń
                                         preferencję</DropdownItem>
                                 </DropdownSection>
                             </DropdownMenu>
@@ -229,22 +263,27 @@ const Home = () => {
     };
 
     const filteredData = data && data.filter(item =>
-      item.first_name.toLowerCase().startsWith(filterValue.toLowerCase())
+        item.first_name.toLowerCase().startsWith(filterValue.toLowerCase())
     );
 
     return (
         <NextUIProvider>
             <div className="bg-pink-200 h-screen w-screen">
-                <Head className="shadow-lg" >
-                    <title className="shadow-lg" >SpeedDatingMatcher</title>
+                <Head className="shadow-lg">
+                    <title className="shadow-lg">SpeedDatingMatcher</title>
+                    <link rel="icon" href="/images/favicon.ico" sizes="any"/>
                 </Head>
                 <div className="mx-10 flex">
                     <Image
                         isZoomed
                         alt="MailIcon"
                         src="/mail_icon.png"
+                        aria-label="speed-dating"
                     />
-                    <h1 className="text-white mt-10 text-xl font-bold">Speed Dating Matcher</h1>
+                    <div className="text-white mt-10 text-xl">
+                        <h1 className={font.className} style={{fontSize: '2rem'}}>Speed Dating Matcher</h1>
+                    </div>
+
                 </div>
 
                 <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
@@ -252,25 +291,28 @@ const Home = () => {
                         <Button onPress={onPersonModalOpen}
                                 className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
                                 variant="faded"
-                                startContent={<Image src="/add_person_icon.svg/"/>}
+                                startContent={<Image src="/add_person_icon.svg/" aria-label="add-person-button"/>}
                         >
                             Dodaj osobę
                         </Button>
-                        {//TODO add onPress handle
-                        }
-                        <Button
+                        <Button onPress={onSendEmailsAlertModalOpen}
                                 className="bg-white text-black shadow-lg from-pink-500 border-pink-300 ml-2"
                                 variant="faded"
-                                startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5"/>}
+                                startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5"
+                                                     aria-label="send-emails"/>}
                         >
                             Wyślij listy
                         </Button>
+                        <SendEmailsAlertModal
+                            isSendEmailsAlertModalOpen={isSendEmailsAlertModalOpen}
+                            onSendEmailsAlertModalClose={onSendEmailsAlertModalClose}
+                        />
                         <LoginModal
-                                fetchDataFunction={fetchData}
-                                isLoginModalOpen={isLoginModalOpen}
-                                onLoginModalClose={onLoginModalClose}
-                                setIsLoggedIn={setIsLoggedIn}
-                            />
+                            fetchDataFunction={fetchData}
+                            isLoginModalOpen={isLoginModalOpen}
+                            onLoginModalClose={onLoginModalClose}
+                            setIsLoggedIn={setIsLoggedIn}
+                        />
                         <PersonModal
                             mode={personObjectValue === undefined ? "add" : "edit"}
                             personObject={personObjectValue}
