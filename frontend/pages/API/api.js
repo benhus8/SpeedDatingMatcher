@@ -86,6 +86,7 @@ export const createContactRequest = async (requestData, personRequestingContactI
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': window.sessionStorage.getItem("access_token")
     },
     body: JSON.stringify(requestData),
   });
@@ -103,7 +104,8 @@ export const getPersonsContactRequest = async () => {
     const response = await fetch(`http://127.0.0.1:8000/api/contact-requests`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': window.sessionStorage.getItem("access_token")
       },
     });
     return response.json();
@@ -117,7 +119,8 @@ export const getContactRequests = async (personNumber) => {
     const response = await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/possible-contacts/`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': window.sessionStorage.getItem("access_token")
       },
     });
     return await response.json();
