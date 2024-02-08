@@ -30,20 +30,15 @@ import {SearchIcon} from "./components/SearchIcon";
 import DeleteAlertModal from "./components/DeleteAlertModal";
 import ContactRequestModal from "./components/ContactRequestModal";
 import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAlertModal";
-
 import LoginModal from "./components/LoginModal";
 
 
 const Home = () => {
     const [data, setData] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [recordToDelete, setRecordToDelete] = useState(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [contactRequestData, setContactRequestData] = useState(null);
     const [filterValue, setFilterValue] = useState('');
 
     const {isOpen: isPersonModalOpen, onOpen: onPersonModalOpen, onClose: onPersonModalClose} = useDisclosure();
-    const {isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose} = useDisclosure();
 
     const {isOpen: isContactRequestModalOpen, onOpen: onContactRequestModalOpen, onClose: onContactRequestModalClose} = useDisclosure();
 
@@ -56,6 +51,9 @@ const Home = () => {
 
     const [deleteObjectType, setDeleteObjectType] = useState(undefined)
     const [preferredPersons, setPreferredPersons] = useState([])
+
+    const {isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose} = useDisclosure();
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
 
     function handleEditPerson(personRowValue) {
         onPersonModalOpen()
@@ -82,12 +80,9 @@ const Home = () => {
     const fetchData = async () => {
         setPersonObjectValue(undefined)
         try {
-            const result = await getAllPersonsWithContactRequests();
+            const result = await getAllPersonsWithContactRequests(setIsLoggedIn);
             setData(result);
-            return result;
         } catch (error) {
-            console.error("Error fetching data:", error);
-            throw error;
         }
     };
 
@@ -153,11 +148,14 @@ const Home = () => {
         const cellValue = person[columnKey];
         switch (columnKey) {
             case "number":
-                return (<p className="text-bold text-sm capitalize">{cellValue}</p>);
+                return (
+                    <p className="text-bold text-sm capitalize">{cellValue}</p>
+                );
             case "first_name":
-                return (<p className="text-bold text-sm capitalize">{cellValue}</p>);
+                return (
+                    <p className="text-bold text-sm capitalize">{cellValue}</p>
+                );
             case "email":
-                return (<p className="text-bold text-sm">{cellValue}</p>);
                 return (
                     <p className="text-bold text-sm">{cellValue}</p>
                 );
@@ -168,7 +166,9 @@ const Home = () => {
                     </Chip>
                 );
             case "preferred_persons":
-                return (<p className="text-bold text-sm">{mapPreferredPersons(cellValue)}</p>);
+                return (
+                    <p className="text-bold text-sm">{mapPreferredPersons(cellValue)}</p>
+                );
             case "actions":
                 return (
                     <div className="relative flex justify-end items-center gap-2">
@@ -189,7 +189,10 @@ const Home = () => {
                                     >
                                         Edytuj Osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/add_contact_request.svg/"/>}
+                                    <DropdownItem onClick={() =>
+                                        handleAddContactRequest(person)
+                                        }
+                                                  startContent={<Image src="/add_contact_request.svg/"/>}
                                     >
                                         Dodaj preferencję</DropdownItem>
                                 </DropdownSection>
@@ -199,7 +202,8 @@ const Home = () => {
                                         startContent={<Image src="/delete_person_icon.svg/"/>}
                                     >Usuń osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>}>Usuń
+                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>} onClick={() =>
+                                        handleDeleteContactRequest(person)}>Usuń
                                         preferencję</DropdownItem>
                                 </DropdownSection>
                             </DropdownMenu>
@@ -212,7 +216,6 @@ const Home = () => {
     }, []);
 
 
-
     function mapPreferredPersons(preferredPersons) {
         if (preferredPersons == null) return ''
         const strings = preferredPersons.map(number => String(number))
@@ -223,19 +226,6 @@ const Home = () => {
         const lowercaseValue = searchValue.toLowerCase();
         console.log("Filter value:", lowercaseValue);
         setFilterValue(lowercaseValue);
-    const handleConfirmDelete = async (personIdToDelete) => {
-        try {
-            const {personRequestingContactId, preferredPersonId} = recordToDelete;
-            if (personIdToDelete === preferredPersonId) {
-                await deleteContactRequest(setIsLoggedIn, personRequestingContactId, preferredPersonId);
-                setData(await getAllPersonsWithContactRequests());
-            } else {
-                console.error('Numer osoby do usunięcia nie pasuje do rekordu.');
-            }
-            setShowConfirmation(false);
-        } catch (error) {
-            console.error('Błąd podczas usuwania rekordu:', error);
-        }
     };
 
     const filteredData = data && data.filter(item =>
@@ -257,36 +247,6 @@ const Home = () => {
                     <h1 className="text-white mt-10 text-xl font-bold">Speed Dating Matcher</h1>
                 </div>
 
-            <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
-                <div className=" ml-10 mb-3">
-                    <Button onPress={onPersonModalOpen}
-                            className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
-                            variant="faded"
-                            startContent={<Image src="/add_person_icon.svg/"/>}
-                    >
-                        Dodaj osobę
-                    </Button>
-                    <LoginModal
-                        fetchDataFunction={fetchData}
-                        isLoginModalOpen={isLoginModalOpen}
-                        onLoginModalClose={onLoginModalClose}
-                        setIsLoggedIn={setIsLoggedIn}
-                    />
-                    <PersonModal
-                        mode={personObjectValue === undefined ? "add" : "edit"}
-                        personObject={personObjectValue}
-                        setPersonObject={setPersonObjectValue}
-                        fetchDataOnClose={fetchData}
-                        isPersonModalOpen={isPersonModalOpen}
-                        onPersonModalClose={onPersonModalClose}
-                    />
-                    <DeleteAlertModal
-                        objectToDeleteName={deleteObjectType}
-                        objectToDelete={objectToDelete}
-                        fetchDataOnClose={fetchData}
-                        isDeleteAlertModalOpen={isDeleteAlertModalOpen}
-                        onDeleteAlertModalClose={onDeleteAlertModalClose}
-                    />
                 <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
                     <div className=" ml-10 mb-3 ">
                         <Button onPress={onPersonModalOpen}
@@ -305,6 +265,12 @@ const Home = () => {
                         >
                             Wyślij listy
                         </Button>
+                        <LoginModal
+                                fetchDataFunction={fetchData}
+                                isLoginModalOpen={isLoginModalOpen}
+                                onLoginModalClose={onLoginModalClose}
+                                setIsLoggedIn={setIsLoggedIn}
+                            />
                         <PersonModal
                             mode={personObjectValue === undefined ? "add" : "edit"}
                             personObject={personObjectValue}
