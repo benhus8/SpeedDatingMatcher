@@ -1,4 +1,5 @@
 import React from "react";
+import DeleteIcon from "./DeleteIcon";
 export const EditDocumentIcon = (props) => (
   <svg
     aria-hidden="true"
@@ -21,3 +22,5 @@ export const EditDocumentIcon = (props) => (
     />
   </svg>
 );
+
+export default EditDocumentIcon;

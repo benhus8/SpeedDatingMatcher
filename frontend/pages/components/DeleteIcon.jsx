@@ -47,3 +47,4 @@ export const DeleteIcon = (props) => (
     />
   </svg>
 );
+export default DeleteIcon;

@@ -16,3 +16,6 @@ export const VerticalDotsIcon = ({size = 24, width, height, ...props}) => (
     />
   </svg>
 );
+
+
+export default VerticalDotsIcon;
