@@ -24,7 +24,7 @@ H1_TAG_STYLE = """Margin:0;line-height:22px;mso-line-height-rule:exactly;font-fa
 LI_TAG_STYLE = """-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:27px;Margin-bottom:15px;margin-left:0;color:#FE4642;font-size:14px;padding-left:7px'"""
 
 
-@permission_classes((IsAuthenticated,))
+
 class ObtainTokenPairView(TokenObtainPairView):
     serializer_class = TokenObtainPairSerializer
 
