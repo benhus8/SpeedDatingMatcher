@@ -115,7 +115,7 @@ class PossibleContactsAPIView(generics.RetrieveAPIView):
         except Person.DoesNotExist:
             return JsonResponse({"message": "Person not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
+@permission_classes((IsAuthenticated,))
 def send_email(request):
     server = initialize_server_connection()
 
