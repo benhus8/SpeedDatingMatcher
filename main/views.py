@@ -28,7 +28,10 @@ class PersonCreateView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(email_verified=is_valid)
+
+        email_verified = is_valid if is_valid is not None else False
+
+        serializer.save(email_verified=email_verified)
 
         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
@@ -120,7 +123,7 @@ def send_email(request):
             h1_tag['style'] = H1_TAG_STYLE
             new_li_tag = soup.new_tag('li')
             new_li_tag['style'] = LI_TAG_STYLE
-            h1_tag.string = 'Numerek: ' + str(person.number) +', Email: ' + str(person.email)
+            h1_tag.string = 'Numerek: ' + str(person.number) + ', Email: ' + str(person.email)
             new_li_tag.append(h1_tag)
             ul_tag.append(new_li_tag)
 
@@ -129,6 +132,7 @@ def send_email(request):
 
     server.quit()
     return HttpResponse('Send Success!')
+
 
 def findMatchingsForAllPersons():
     persons = Person.objects.all()
@@ -162,5 +166,7 @@ def initialize_server_connection():
     server.ehlo()
     server.login(email_user, email_password)
     return server
+
+
 def fill_template_with_matching_persons():
     pass
