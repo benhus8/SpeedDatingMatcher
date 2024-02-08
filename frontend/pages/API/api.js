@@ -82,7 +82,7 @@ export const editPerson = async (data, personNumber) => {
 };
 
 export const createContactRequest = async (requestData, personRequestingContactId) => {
-  const response = await fetch(`http://127.0.0.1:8000/api/contact-requests/${personRequestingContactId}/`, {
+  const response = await fetch(defaultPath + `/api/contact-requests/${personRequestingContactId}/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export const createContactRequest = async (requestData, personRequestingContactI
 
 export const getPersonsContactRequest = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/contact-requests`, {
+    const response = await fetch(defaultPath + `/api/contact-requests`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export const getPersonsContactRequest = async () => {
 
 export const getContactRequests = async (personNumber) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/persons/${personNumber}/possible-contacts/`, {
+    const response = await fetch(defaultPath + `/api/persons/${personNumber}/possible-contacts/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -133,13 +133,26 @@ export const getContactRequests = async (personNumber) => {
 
 export const getToken = async (data) => {
   try {
-    return await fetch(`http://127.0.0.1:8000/api/token/`, {
+    return await fetch(defaultPath + `/api/token/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': window.sessionStorage.getItem("access_token")
       },
       body: JSON.stringify(data),
+    })
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const sendEmails = async () => {
+  try {
+    return await fetch(defaultPath + `/api/send-emails/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': window.sessionStorage.getItem("access_token")
+      },
     })
   } catch (error) {
     console.error(error);
