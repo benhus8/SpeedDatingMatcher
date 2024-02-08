@@ -30,6 +30,7 @@ import {SearchIcon} from "./components/SearchIcon";
 import DeleteAlertModal from "./components/DeleteAlertModal";
 import ContactRequestModal from "./components/ContactRequestModal";
 import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAlertModal";
+import LoginModal from "./components/LoginModal";
 
 
 const Home = () => {
@@ -50,6 +51,9 @@ const Home = () => {
 
     const [deleteObjectType, setDeleteObjectType] = useState(undefined)
     const [preferredPersons, setPreferredPersons] = useState([])
+
+    const {isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose} = useDisclosure();
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
 
     function handleEditPerson(personRowValue) {
         onPersonModalOpen()
@@ -76,22 +80,17 @@ const Home = () => {
     const fetchData = async () => {
         setPersonObjectValue(undefined)
         try {
-            const result = await getAllPersonsWithContactRequests();
+            const result = await getAllPersonsWithContactRequests(setIsLoggedIn);
             setData(result);
-            return result;
         } catch (error) {
-            console.error("Error fetching data:", error);
-            throw error;
         }
     };
 
     useEffect(() => {
-        fetchData()
-            .catch(error => {
-                // Handle error here
-                console.error("Error fetching data in useEffect:", error);
-            });
-    }, []);
+        if (!isLoggedIn) {
+            onLoginModalOpen()
+        }
+    }, [isLoggedIn]);
 
     const fetchContactRequests = async () => {
         try {
@@ -266,6 +265,12 @@ const Home = () => {
                         >
                             Wyślij listy
                         </Button>
+                        <LoginModal
+                                fetchDataFunction={fetchData}
+                                isLoginModalOpen={isLoginModalOpen}
+                                onLoginModalClose={onLoginModalClose}
+                                setIsLoggedIn={setIsLoggedIn}
+                            />
                         <PersonModal
                             mode={personObjectValue === undefined ? "add" : "edit"}
                             personObject={personObjectValue}
