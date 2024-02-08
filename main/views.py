@@ -59,7 +59,9 @@ class PersonUpdateView(generics.UpdateAPIView):
 
         serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(email_verified=is_valid)
+        email_verified = is_valid if is_valid is not None else False
+
+        serializer.save(email_verified=email_verified)
         return Response(serializer.data)
 
 
