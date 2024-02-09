@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@netlify/plugin-nextjs": "^4.41.3",
     "@next/font": "^14.1.0",
     "@nextui-org/react": "^2.2.9",
     "formik": "^2.4.5",
