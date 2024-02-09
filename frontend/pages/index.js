@@ -25,15 +25,15 @@ import {
     useDisclosure
 } from "@nextui-org/react";
 
-import {getAllPersonsWithContactRequests, getContactRequests} from "./API/api";
-import PersonModal from './components/PersonModal'
-import {VerticalDotsIcon} from "./components/VerticalDotIcon";
-import {SearchIcon} from "./components/SearchIcon";
-import DeleteAlertModal from "./components/DeleteAlertModal";
-import ContactRequestModal from "./components/ContactRequestModal";
-import DeleteContactRequestAlertModal from "./components/DeleteContactRequestAlertModal";
-import LoginModal from "./components/LoginModal";
-import SendEmailsAlertModal from "./components/SendEmailsAlertModal";
+import {getAllPersonsWithContactRequests, getContactRequests} from "../API/api";
+import PersonModal from '../components/PersonModal'
+import {VerticalDotsIcon} from "../components/VerticalDotIcon";
+import {SearchIcon} from "../components/SearchIcon";
+import DeleteAlertModal from "../components/DeleteAlertModal";
+import ContactRequestModal from "../components/ContactRequestModal";
+import DeleteContactRequestAlertModal from "../components/DeleteContactRequestAlertModal";
+import LoginModal from "../components/LoginModal";
+import SendEmailsAlertModal from "../components/SendEmailsAlertModal";
 import {Grandstander} from "@next/font/google";
 
 const font = Grandstander({subsets: ['latin']})
