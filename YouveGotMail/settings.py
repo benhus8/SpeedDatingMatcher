@@ -64,6 +64,8 @@ CORS_ALLOWED_ORIGINS = ['*']
 
 ROOT_URLCONF = 'YouveGotMail.urls'
 
+CSRF_TRUSTED_ORIGINS = ['https://sdm-backend.azurewebsites.net']
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
