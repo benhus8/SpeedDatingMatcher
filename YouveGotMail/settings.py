@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 CSRF_COOKIE_SECURE = False
 
 # Application definition
+CORS_ALLOW_ALL_ORIGINS = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',
