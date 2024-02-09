@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@nextui-org/react";
-import animationData from '../../public/animations/check.json';
+import animationData from '../public/animations/check.json';
 import dynamic from 'next/dynamic';
 import {sendEmails} from "../API/api";
 
