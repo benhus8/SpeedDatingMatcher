@@ -1,23 +1,35 @@
-## Base commands
-### Migration commands
-- reset all apllied migrations <br>
-`python manage.py migrate main zero`
-- add new empty migration <br>
-`python manage.py makemigrations --empty main`
-- check changes made in models/migrations <br>
-`python manage.py makemigrations `
-- aplly new migrations/ changes in migrations <br>
-`python manage.py migrate `
-### Application commands
-- run app <br>
-`python  manage.py runserver `
-### Users commands
-- create admin user <br>
-`python manage.py createsuperuser`
+## Speed Dating Event Management System 
+This project is a collaboration between Django and Next.js frameworks, aimed at creating a comprehensive event management system tailored for speed dating events. The primary focus was to gain proficiency in both Django for backend development and Next.js for frontend implementation.
 
-## Workflow
-### Branches
-- Main branch is develop. From this branch we create feature branches and all other types of branches. When The project is done or we are confident that everything is work fine we can merge it to master.
-### When feature branch is done
-- When your job is done and you commited and pushed your all changes you should create pull request. Second person will check if everything is working fine and after that second person can merge your feature branch to develop.
-check ci
+### Features:
+
+- **Integration with Brevo:** Seamless email communication is facilitated through integration with Brevo, streamlining the process of sending emails to participants.
+- **Azure Deployment:** The application has been successfully deployed on Microsoft Azure, where it underwent thorough testing and was utilized during a live speed dating event.
+- **Email Validation:** In addition to managing event data, the system includes a feature for validating email addresses
+
+### Technologies Used:
+
+- **Django:** Utilized for robust backend development.
+- **Next.js:** Leveraged for building the frontend interface.
+- **Brevo Integration:** Integrated to manage email communication efficiently.
+- **Microsoft Azure:** Chosen as the deployment platformn.
+
+### Deployment Instructions:
+To deploy the Speed Dating Event Management System locally, follow these steps:
+
+#### Backend
+- install all dependencies: `pip install -r requirements.txt` <br>
+- create admin user `python manage.py createsuperuser` <br>
+- create database and apply migrations `python manage.py migrate `
+- run backend app `python  manage.py runserver `
+ 
+#### Frontend
+- go to `frontend` directory
+- run `npm install` <br>
+- run `npm run dev` <br>
+### Contributors:
+- [benhus8](https://github.com/benhus8)
+- [Mattias988](https://github.com/Mattias988)
+
+### License:
+This project is licensed under the [MIT License], granting users the freedom to use, modify, and distribute the software as per the terms outlined in the license agreement.
