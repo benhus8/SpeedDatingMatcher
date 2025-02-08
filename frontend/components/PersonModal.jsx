@@ -38,18 +38,19 @@ export default function PersonModal({
     const handleSubmit = async (values, {resetForm}) => {
         if (mode === "add") {
             try {
-                const responseData = await createPerson(values);
+                const response = await createPerson(values);
+                const responseData = response.json()
+
                 if (responseData["non_field_errors"]) {
                     const errorString = responseData["non_field_errors"].join("\n");
                     if (errorString.includes("EMAIL_MUST_BE_UNIQUE")) {
                         toast.warning('Osoba o tym adresie email już istnieje!')
                     }
-                } if (responseData["number"]) {
-                     const errorString = responseData["number"].join("\n");
-                    if (errorString.includes("person with this number already exists.")) {
-                        toast.warning('Osoba o tym numerze już istnieje!')
-                    }
-                } else {
+                } if (responseData["number"] && responseData["number"].join("\n").includes("person with this number already exists.")) {
+                     toast.warning('Osoba o tym numerze już istnieje!')
+                }
+
+                if(response.ok) {
                     toast.success('Osoba dodana!');
                     fetchDataOnClose()
                     onPersonModalClose();

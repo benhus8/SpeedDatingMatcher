@@ -66,7 +66,7 @@ export const createPerson = async (data) => {
       },
       body: JSON.stringify(data),
     });
-    return response.json();
+    return response;
   } catch (error) {
     console.error(error);
   }
