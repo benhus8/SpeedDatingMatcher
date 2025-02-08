@@ -9,6 +9,7 @@ export default function SendEmailsAlertModal({
                                                  isSendEmailsAlertModalOpen, onSendEmailsAlertModalClose
                                              }) {
     const [showAnimation, setShowAnimation] = useState(false)
+    const [hideSendButton, setHideSendButton] = useState(false)
     const Lottie = dynamic(() => import('react-lottie'), {ssr: false});
 
     const defaultOptions = {
@@ -21,6 +22,7 @@ export default function SendEmailsAlertModal({
 
     async function handleSendEmails() {
         try {
+            setHideSendButton(true)
             await sendEmails()
             setShowAnimation(true)
         } catch (error) {
@@ -34,6 +36,7 @@ export default function SendEmailsAlertModal({
     const handleAnimationComplete = () => {
         setShowAnimation(false);
         onSendEmailsAlertModalClose();
+        setHideSendButton(false);
     };
 
     return (<>
@@ -61,8 +64,11 @@ export default function SendEmailsAlertModal({
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="danger" variant="flat" onPress={handleSendEmails}>Wyślij</Button>
-                    <Button color="default" onPress={onSendEmailsAlertModalClose}>Anuluj</Button>
+                    {hideSendButton === false ? (
+                        <> <Button color="danger" variant="flat" onPress={handleSendEmails} disabled={showAnimation}>Wyślij</Button>
+                        <Button color="default" onPress={onSendEmailsAlertModalClose}>Anuluj</Button>
+                        </>
+                    ) : null }
                 </ModalFooter>
             </ModalContent>
         </Modal>
