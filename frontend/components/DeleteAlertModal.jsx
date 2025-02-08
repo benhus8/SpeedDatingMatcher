@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@nextui-org/react";
 import {deletePerson} from "../API/api";
+import { toast } from 'react-toastify';
 
 export default function DeleteAlertModal({
                                              isDeleteAlertModalOpen,
@@ -13,6 +14,7 @@ export default function DeleteAlertModal({
     async function handleDelete() {
         try {
             await deletePerson(objectToDelete.number);
+              toast.success('Osoba usunięta!')
             fetchDataOnClose()
             onDeleteAlertModalClose();
         } catch (error) {

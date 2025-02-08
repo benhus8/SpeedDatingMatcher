@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import React, {useEffect, useState} from 'react';
 import 'tailwindcss/tailwind.css'
+import {ToastContainer} from 'react-toastify';
 import {
     Button,
     Card,
@@ -105,6 +106,7 @@ const Home = () => {
         try {
             const result = await getAllPersonsWithContactRequests(setIsLoggedIn);
             setData(result);
+            console.log(data)
         } catch (error) {
         }
     };
@@ -166,7 +168,7 @@ const Home = () => {
         },
     ];
 
-    const renderCell = React.useCallback((person, columnKey) => {
+    const renderCell = (person, columnKey) => {
         const cellValue = person[columnKey];
         switch (columnKey) {
             case "number":
@@ -202,43 +204,48 @@ const Home = () => {
                     <div className="relative flex justify-end items-center gap-2">
                         <Dropdown>
                             <DropdownTrigger>
-                                <Button isIconOnly
-                                        size="sm"
-                                        variant="bordered"
-                                        className="bg-pink-100 border-pink-200"
-
+                                <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="bordered"
+                                    className="bg-pink-100 border-pink-200"
                                 >
                                     <VerticalDotsIcon className="text-default-300"/>
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu>
                                 <DropdownSection showDivider>
-                                    <DropdownItem onClick={() => handleEditPerson(person)}
-                                                  startContent={<Image src="/edit_person_icon.svg/"
-                                                                       aria-label="edit-person"/>}
+                                    <DropdownItem
+                                        onClick={() => handleEditPerson(person)}
+                                        startContent={<Image src="/edit_person_icon.svg" aria-label="edit-person"/>}
                                     >
                                         Edytuj Osobę
                                     </DropdownItem>
-                                    <DropdownItem onClick={() =>
-                                        handleAddContactRequest(person)
-                                    }
-                                                  startContent={<Image src="/add_contact_request.svg/"
-                                                                       aria-label="add-contact-request"/>}
-                                    >
-                                        Dodaj preferencję</DropdownItem>
+                                        <DropdownItem
+                                            key="add-preference"
+                                            onClick={() => handleAddContactRequest(person)}
+                                            startContent={<Image src="/add_contact_request.svg"
+                                                                 aria-label="add-contact-request"/>}
+                                            isDisabled={data?.length ===1}
+                                        >
+                                            Dodaj preferencję
+                                        </DropdownItem>
                                 </DropdownSection>
                                 <DropdownSection>
                                     <DropdownItem
                                         onClick={() => handleDeletePerson(person)}
-                                        startContent={<Image src="/delete_person_icon.svg/"
-                                                             aria-label="delete-person"/>}
-                                    >Usuń osobę
+                                        startContent={<Image src="/delete_person_icon.svg" aria-label="delete-person"/>}
+                                    >
+                                        Usuń osobę
                                     </DropdownItem>
-                                    <DropdownItem startContent={<Image src="/delete_contact_request_icon.svg/"/>}
-                                                  aria-label="delete-contact-request"
-                                                  onClick={() =>
-                                                      handleDeleteContactRequest(person)}>Usuń
-                                        preferencję</DropdownItem>
+                                    <DropdownItem
+                                        onClick={() => handleDeleteContactRequest(person)}
+                                        startContent={<Image src="/delete_contact_request_icon.svg"/>}
+                                        aria-label="delete-contact-request"
+                                        isDisabled={person?.preferred_persons.length === 0}
+                                    >
+                                        Usuń preferencję
+                                    </DropdownItem>
                                 </DropdownSection>
                             </DropdownMenu>
                         </Dropdown>
@@ -247,7 +254,7 @@ const Home = () => {
             default:
                 return cellValue;
         }
-    }, []);
+    };
 
 
     function mapPreferredPersons(preferredPersons) {
@@ -287,6 +294,7 @@ const Home = () => {
                 </div>
 
                 <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
+                    <ToastContainer/>
                     <div className=" ml-10 mb-3 ">
                         <Button onPress={onPersonModalOpen}
                                 className="bg-white text-black shadow-lg from-pink-500 border-pink-300"

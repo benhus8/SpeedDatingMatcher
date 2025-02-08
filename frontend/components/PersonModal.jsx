@@ -10,6 +10,7 @@ import {
 } from "@nextui-org/react";
 import {Formik, Form, Field} from "formik";
 import {createPerson, editPerson} from "../API/api";
+import { toast } from 'react-toastify';
 
 export default function PersonModal({
                                         mode,
@@ -40,14 +41,21 @@ export default function PersonModal({
                 const responseData = await createPerson(values);
                 if (responseData["non_field_errors"]) {
                     const errorString = responseData["non_field_errors"].join("\n");
-                    if (errorString.includes("email must make a unique set")) {
-                        setErrorMessage("Osoba o takim email-u już istnieje!")
+                    if (errorString.includes("EMAIL_MUST_BE_UNIQUE")) {
+                        toast.warning('Osoba o tym adresie email już istnieje!')
+                    }
+                } if (responseData["number"]) {
+                     const errorString = responseData["number"].join("\n");
+                    if (errorString.includes("person with this number already exists.")) {
+                        toast.warning('Osoba o tym numerze już istnieje!')
                     }
                 } else {
+                    toast.success('Osoba dodana!');
                     fetchDataOnClose()
                     onPersonModalClose();
                     resetForm();
                     setPersonObject(undefined)
+
                 }
             } catch (error) {
                 console.log(error)
@@ -58,7 +66,7 @@ export default function PersonModal({
                 if (responseData["non_field_errors"]) {
                     const errorString = responseData["non_field_errors"].join("\n");
                     if (errorString.includes("email must make a unique set")) {
-                        setErrorMessage("Osoba o takim email-u już istnieje!")
+                        toast.warning('Osoba o tym adresie email już istnieje!')
                     }
                 } else {
                     fetchDataOnClose()
