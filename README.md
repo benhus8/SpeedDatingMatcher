@@ -29,7 +29,7 @@ To deploy the Speed Dating Event Management System locally, follow these steps:
 - run `npm run dev` <br>
 
 #### Deploy
-##### Change environment variables in settings.py
+##### Change environment variables in settings.py CORS_ALLOWED_ORIGINS AND CORS_ALLOWED_ORIGINS
 ##### Change environment variable in .env in frontend
 ##### 
 ##### Run commands:
