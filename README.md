@@ -27,6 +27,16 @@ To deploy the Speed Dating Event Management System locally, follow these steps:
 - go to `frontend` directory
 - run `npm install` <br>
 - run `npm run dev` <br>
+
+#### Deploy
+##### Change environment variables in settings.py
+##### Change environment variable in .env in frontend
+##### 
+##### Run commands:
+- docker-compose build
+- docker-compose up -d
+- docker-compose exec web python manage.py migrate
+- docker-compose exec web python manage.py createsuperuser
 ### Contributors:
 - [benhus8](https://github.com/benhus8)
 - [Mattias988](https://github.com/Mattias988)
