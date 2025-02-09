@@ -1,4 +1,4 @@
-const defaultPath = 'http://127.0.0.1:8000'
+const defaultPath = ""
 
 const ApiPage = () => {
   return (
