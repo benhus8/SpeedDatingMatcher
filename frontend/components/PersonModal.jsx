@@ -18,13 +18,32 @@ export default function PersonModal({
                                         setPersonObject,
                                         fetchDataOnClose,
                                         isPersonModalOpen,
-                                        onPersonModalClose
+                                        onPersonModalClose,
+                                        existingPersons = []
                                     }) {
-    const validateEmail = (value) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) ? setInvalidEmail(false) : setInvalidEmail(true);
-
-    const [invalidNumber, setInvalidNumber] = useState(false)
-    const [invalidEmail, setInvalidEmail] = useState(false)
+    const [existingNumbersSet, setExistingNumbersSet] = useState(new Set());
+    const [existingEmailsSet, setExistingEmailsSet] = useState(new Set());
+    const [invalidNumber, setInvalidNumber] = useState(false);
+    const [invalidEmail, setInvalidEmail] = useState(false);
+    const [numberErrorMessage, setNumberErrorMessage] = useState("");
+    const [emailErrorMessage, setEmailErrorMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+
+    const validateEmail = (value) => {
+        const isValid = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value);
+        if (!isValid) {
+            setInvalidEmail(true);
+            setEmailErrorMessage("Niepoprawny format e-mail");
+        } else {
+            setInvalidEmail(false);
+            setEmailErrorMessage("");
+            const normalized = String(value || '').trim().toLowerCase();
+            if (existingEmailsSet.has(normalized)) {
+                setInvalidEmail(true);
+                setEmailErrorMessage('Osoba o tym adresie email już istnieje!');
+            }
+        }
+    };
 
     function handleClose() {
         setPersonObject(undefined)
@@ -35,52 +54,101 @@ export default function PersonModal({
         setErrorMessage(undefined)
     }, [isPersonModalOpen]);
 
+    // Build lookup sets for existing persons to validate duplicates client-side
+    useEffect(() => {
+        const personsArr = Array.isArray(existingPersons) ? existingPersons : [];
+        const numbers = new Set(personsArr.map(p => String(p.number)));
+        const emails = new Set(personsArr.map(p => String(p.email || '').trim().toLowerCase()));
+        // Exclude current person's own values in edit mode
+        if (mode === 'edit' && personObject) {
+            numbers.delete(String(personObject.number));
+            emails.delete(String((personObject.email || '').trim().toLowerCase()));
+        }
+        setExistingNumbersSet(numbers);
+        setExistingEmailsSet(emails);
+    }, [existingPersons, mode, personObject]);
+
     const handleSubmit = async (values, {resetForm}) => {
+        // Normalize number to string to avoid NaN issues
+        const payload = {
+            ...values,
+            number: values.number,
+        };
+        // Client-side duplicate checks before API call
+        const normalizedNumber = String(values.number);
+        const normalizedEmail = String(values.email || '').trim().toLowerCase();
+        let hasClientDuplicate = false;
+        if (existingNumbersSet.has(normalizedNumber)) {
+            setInvalidNumber(true);
+            setNumberErrorMessage('Osoba o tym numerze już istnieje!');
+            toast.warning('Osoba o tym numerze już istnieje!');
+            hasClientDuplicate = true;
+        }
+        if (existingEmailsSet.has(normalizedEmail)) {
+            setInvalidEmail(true);
+            setEmailErrorMessage('Osoba o tym adresie email już istnieje!');
+            toast.warning('Osoba o tym adresie email już istnieje!');
+            hasClientDuplicate = true;
+        }
+        if (hasClientDuplicate) {
+            return; // Do not call API if duplicates exist locally
+        }
         if (mode === "add") {
             try {
-                const response = await createPerson(values);
-                const responseData = response.json()
-
-                if (responseData["non_field_errors"]) {
-                    const errorString = responseData["non_field_errors"].join("\n");
-                    if (errorString.includes("EMAIL_MUST_BE_UNIQUE")) {
-                        toast.warning('Osoba o tym adresie email już istnieje!')
-                    }
-                } if (responseData["number"] && responseData["number"].join("\n").includes("person with this number already exists.")) {
-                     toast.warning('Osoba o tym numerze już istnieje!')
-                }
-
-                if(response.ok) {
-                    toast.success('Osoba dodana!');
-                    fetchDataOnClose()
-                    onPersonModalClose();
-                    resetForm();
-                    setPersonObject(undefined)
-
-                }
+                await createPerson(payload);
+                toast.success('Osoba dodana!');
+                fetchDataOnClose();
+                onPersonModalClose();
+                resetForm();
+                setPersonObject(undefined);
             } catch (error) {
-                console.log(error)
+                const data = error?.data || {};
+                if (data.number) {
+                    setInvalidNumber(true);
+                    setNumberErrorMessage('Osoba o tym numerze już istnieje!');
+                    toast.warning('Osoba o tym numerze już istnieje!');
+                }
+                if (data.email) {
+                    setInvalidEmail(true);
+                    setEmailErrorMessage('Osoba o tym adresie email już istnieje!');
+                    toast.warning('Osoba o tym adresie email już istnieje!');
+                }
+                if (Array.isArray(data.non_field_errors) && data.non_field_errors.includes('EMAIL_MUST_BE_UNIQUE')) {
+                    setInvalidEmail(true);
+                    setEmailErrorMessage('Osoba o tym adresie email już istnieje!');
+                    toast.warning('Osoba o tym adresie email już istnieje!');
+                }
+                if (!data.number && !data.email && !(Array.isArray(data.non_field_errors) && data.non_field_errors.includes('EMAIL_MUST_BE_UNIQUE'))) {
+                    setErrorMessage('Nie udało się dodać osoby.');
+                }
+                console.log(error);
             }
         } else {
             try {
-                const responseData = await editPerson(values, personObject.number);
-                if (responseData["non_field_errors"]) {
-                    const errorString = responseData["non_field_errors"].join("\n");
-                    if (errorString.includes("email must make a unique set")) {
-                        toast.warning('Osoba o tym adresie email już istnieje!')
-                    }
-                } else {
-                    fetchDataOnClose()
-                    onPersonModalClose();
-                    resetForm();
-                    setPersonObject(undefined)
-                }
-
+                await editPerson(payload, personObject.number);
+                toast.success('Zmiany zapisane!');
+                fetchDataOnClose();
+                onPersonModalClose();
+                resetForm();
+                setPersonObject(undefined);
             } catch (error) {
-                console.log(error)
+                const data = error?.data || {};
+                if (data.email) {
+                    setInvalidEmail(true);
+                    setEmailErrorMessage('Osoba o tym adresie email już istnieje!');
+                    toast.warning('Osoba o tym adresie email już istnieje!');
+                }
+                if (Array.isArray(data.non_field_errors) && data.non_field_errors.includes('EMAIL_MUST_BE_UNIQUE')) {
+                    setInvalidEmail(true);
+                    setEmailErrorMessage('Osoba o tym adresie email już istnieje!');
+                    toast.warning('Osoba o tym adresie email już istnieje!');
+                }
+                if (!data.email && !(Array.isArray(data.non_field_errors) && data.non_field_errors.includes('EMAIL_MUST_BE_UNIQUE'))) {
+                    setErrorMessage('Nie udało się zapisać zmian.');
+                }
+                console.log(error);
             }
         }
-
     };
 
     return (
@@ -89,7 +157,7 @@ export default function PersonModal({
                 <ModalContent>
                     <Formik
                         initialValues={mode === "add" ?
-                            {number: undefined, first_name: "", email: ""}
+                            {number: '', first_name: '', email: ''}
                             : personObject}
                         onSubmit={handleSubmit}
                     >
@@ -100,7 +168,21 @@ export default function PersonModal({
                                 <ModalBody>
                                     <Field
                                         name="number"
-                                        validate={(value) => !isNaN(value) && Number.isInteger(Number(value)) ? setInvalidNumber(false) : setInvalidNumber(true)}
+                                        validate={(value) => {
+                                            const valid = !isNaN(value) && Number.isInteger(Number(value));
+                                            if (!valid) {
+                                                setInvalidNumber(true);
+                                                setNumberErrorMessage("Numer musi być liczbą");
+                                            } else {
+                                                setInvalidNumber(false);
+                                                setNumberErrorMessage("");
+                                                const normalized = String(value);
+                                                if (existingNumbersSet.has(normalized)) {
+                                                    setInvalidNumber(true);
+                                                    setNumberErrorMessage('Osoba o tym numerze już istnieje!');
+                                                }
+                                            }
+                                        }}
                                     >
                                         {({field}) => (
                                             <Input
@@ -112,7 +194,7 @@ export default function PersonModal({
                                                 variant="bordered"
                                                 isDisabled={mode === "edit"}
                                                 isInvalid={invalidNumber}
-                                                errorMessage={invalidNumber ? "Numer musi być liczbą" : undefined}
+                                                errorMessage={invalidNumber ? numberErrorMessage : undefined}
                                             />
                                         )}
                                     </Field>
@@ -143,7 +225,7 @@ export default function PersonModal({
                                                 placeholder="Wprowadź e-mail"
                                                 variant="bordered"
                                                 isInvalid={invalidEmail}
-                                                errorMessage={invalidEmail ? "Niepoprawny format e-mail" : undefined}
+                                                errorMessage={invalidEmail ? emailErrorMessage : undefined}
                                             />
                                         )}
                                     </Field>

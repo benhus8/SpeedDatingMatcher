@@ -1,0 +1,16 @@
+export const pl = {
+  app_title: 'Speed Dating Matcher',
+  add_person: 'Dodaj osobę',
+  send_letters: 'Wyślij listy',
+  search_placeholder: 'Wyszukaj po imieniu...',
+  verified: 'Zweryfikowany',
+  not_verified: 'Nie zweryfikowany',
+  email_exists_tip: 'Email istnieje :)',
+  email_maybe_invalid_tip: 'Mamy podejrzenia, że email może nie istnieć :( Upewnij się, czy pole e-mail przyjmuje poprawną wartość',
+  actions: 'Akcje',
+  number: 'Numer',
+  first_name: 'Imię',
+  email: 'e-mail',
+  verification: 'weryfikacja',
+  preferred_persons: 'Preferowane osoby',
+};

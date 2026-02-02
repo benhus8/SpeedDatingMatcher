@@ -38,12 +38,25 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path('api/persons', PersonCreateView.as_view(), name='create-person'),
+    # Also accept trailing slash variant for create to avoid confusion
+    path('api/persons/', PersonCreateView.as_view(), name='create-person-slash'),
     path('api/persons/<int:pk>/', PersonUpdateView.as_view(), name='update-person'),
+    path('api/persons/<int:pk>', PersonUpdateView.as_view(), name='update-person-no-slash'),
     path('api/contact-requests/<int:person_requesting_contact_id>/', ContactRequestCreateView.as_view(), name='create-contact-request'),
+    path('api/contact-requests/<int:person_requesting_contact_id>', ContactRequestCreateView.as_view(), name='create-contact-request-no-slash'),
     path('api/persons/<int:pk>/delete/', PersonDeleteView.as_view(), name='delete-person'),
+    path('api/persons/<int:pk>/delete', PersonDeleteView.as_view(), name='delete-person-no-slash'),
     path('api/persons/contacts/', PersonListAPIView.as_view(), name='get-all-persons-with-contacts'),
+    # Accept no-slash variant to avoid APPEND_SLASH redirect
+    path('api/persons/contacts', PersonListAPIView.as_view(), name='get-all-persons-with-contacts-no-slash'),
     path('api/delete-contact-requests/<int:person_requesting_contact_id>/<int:preferred_person_id>/', ContactRequestDeleteView.as_view(), name='delete-person-contact-request'),
+    path('api/delete-contact-requests/<int:person_requesting_contact_id>/<int:preferred_person_id>', ContactRequestDeleteView.as_view(), name='delete-person-contact-request-no-slash'),
     path('api/send-emails/', send_email, name='send-emails'),
+    path('api/send-emails', send_email, name='send-emails-no-slash'),
     path('api/persons/<int:number>/possible-contacts/', PossibleContactsAPIView.as_view(), name='get-possible-contacts'),
+    # Accept without trailing slash to avoid 301 redirects on GET
+    path('api/persons/<int:number>/possible-contacts', PossibleContactsAPIView.as_view(), name='get-possible-contacts-no-slash'),
     path('api/token/', ObtainTokenPairView.as_view(), name='get-token'),
+    # Accept without trailing slash as well to avoid APPEND_SLASH redirect issues on POST
+    path('api/token', ObtainTokenPairView.as_view(), name='get-token-no-slash'),
 ]

@@ -1,28 +1,11 @@
-const defaultPath = ""
-
-const ApiPage = () => {
-  return (
-    <div>
-      <h1>API Page</h1>
-    </div>
-  );
-};
-export default ApiPage;
+import { request } from '../lib/apiClient';
 export async function getAllPersonsWithContactRequests(setIsLoggedIn) {
   try {
-    const res = await fetch(defaultPath +'/api/persons/contacts/', {
-      method: 'GET',
-      headers: {
-        'Authorization': window.sessionStorage.getItem("access_token")
-      }
+    const data = await request('/api/persons/contacts/', {
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') },
+      onUnauthorized: () => setIsLoggedIn(false)
     });
-
-    if(res.status === 401) {
-      setIsLoggedIn(false)
-      return null
-    } else {
-      return res.json();
-    }
+    return data;
 
   } catch (error) {
     console.error(error);
@@ -32,57 +15,48 @@ export async function getAllPersonsWithContactRequests(setIsLoggedIn) {
 
 export const deleteContactRequest = async (personRequestingContactId, preferredPersonId) => {
   try {
-    await fetch(defaultPath + `/api/delete-contact-requests/${personRequestingContactId}/${preferredPersonId}`, {
+    await request(`/api/delete-contact-requests/${personRequestingContactId}/${preferredPersonId}/`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': window.sessionStorage.getItem("access_token")
-      }
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') }
     });
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
 export const deletePerson = async (personNumber) => {
   try {
-    await fetch(defaultPath + `/api/persons/${personNumber}/delete/`, {
+    await request(`/api/persons/${personNumber}/delete/`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': window.sessionStorage.getItem("access_token")
-      }
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') }
     });
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
 export const createPerson = async (data) => {
   try {
-    const response = await fetch(defaultPath + `/api/persons`, {
+    return await request(`/api/persons/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': window.sessionStorage.getItem("access_token")
-      },
-      body: JSON.stringify(data),
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') },
+      body: data,
     });
-    return response;
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
 export const editPerson = async (data, personNumber) => {
   try {
-    const response = await fetch(defaultPath + `/api/persons/${personNumber}/`, {
+    return await request(`/api/persons/${personNumber}/`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': window.sessionStorage.getItem("access_token")
-      },
-      body: JSON.stringify(data),
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') },
+      body: data,
     });
-    return response.json();
   } catch (error) {
     console.error(error);
     throw error;
@@ -90,48 +64,34 @@ export const editPerson = async (data, personNumber) => {
 };
 
 export const createContactRequest = async (requestData, personRequestingContactId) => {
-  const response = await fetch(defaultPath + `/api/contact-requests/${personRequestingContactId}/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': window.sessionStorage.getItem("access_token")
-    },
-    body: JSON.stringify(requestData),
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-    console.log('Pomyślnie utworzono żądanie kontaktu:', data);
-  } else {
-    throw new Error('Wystąpił błąd podczas tworzenia żądania kontaktu');
+  try {
+    await request(`/api/contact-requests/${personRequestingContactId}/`, {
+      method: 'POST',
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') },
+      body: requestData,
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 };
 
 export const getPersonsContactRequest = async () => {
   try {
-    const response = await fetch(defaultPath + `/api/contact-requests`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': window.sessionStorage.getItem("access_token")
-      },
+    return await request(`/api/contact-requests/`, {
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') }
     });
-    return response.json();
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
 export const getContactRequests = async (personNumber) => {
   try {
-    const response = await fetch(defaultPath + `/api/persons/${personNumber}/possible-contacts/`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': window.sessionStorage.getItem("access_token")
-      },
+    return await request(`/api/persons/${personNumber}/possible-contacts/`, {
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') }
     });
-    return await response.json();
   } catch (error) {
     console.error(error);
     throw error;
@@ -141,28 +101,23 @@ export const getContactRequests = async (personNumber) => {
 
 export const getToken = async (data) => {
   try {
-    return await fetch(defaultPath + `/api/token/`, {
+    return await request(`/api/token/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': window.sessionStorage.getItem("access_token")
-      },
-      body: JSON.stringify(data),
+      body: data,
     })
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 
 export const sendEmails = async () => {
   try {
-    return await fetch(defaultPath + `/api/send-emails/`, {
-      method: 'GET',
-      headers: {
-        'Authorization': window.sessionStorage.getItem("access_token")
-      },
+    return await request(`/api/send-emails/`, {
+      headers: { 'Authorization': window.sessionStorage.getItem('access_token') }
     })
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }

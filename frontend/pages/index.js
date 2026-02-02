@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import React, {useEffect, useState} from 'react';
 import 'tailwindcss/tailwind.css'
-import {ToastContainer} from 'react-toastify';
+import {ToastContainer, toast} from 'react-toastify';
 import {
     Button,
     Card,
@@ -36,6 +36,9 @@ import DeleteContactRequestAlertModal from "../components/DeleteContactRequestAl
 import LoginModal from "../components/LoginModal";
 import SendEmailsAlertModal from "../components/SendEmailsAlertModal";
 import {Grandstander} from "@next/font/google";
+import ErrorBoundary from '../components/ErrorBoundary';
+import { t } from '../i18n';
+import Layout from '../components/Layout';
 
 const font = Grandstander({subsets: ['latin']})
 const Home = () => {
@@ -78,6 +81,9 @@ const Home = () => {
 
     const {isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose} = useDisclosure();
     const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [sortDescriptor, setSortDescriptor] = useState({ column: 'number', direction: 'ascending' })
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     function handleEditPerson(personRowValue) {
         onPersonModalOpen()
@@ -106,8 +112,8 @@ const Home = () => {
         try {
             const result = await getAllPersonsWithContactRequests(setIsLoggedIn);
             setData(result);
-            console.log(data)
         } catch (error) {
+            toast.error('Nie udało się pobrać listy osób.');
         }
     };
 
@@ -188,10 +194,10 @@ const Home = () => {
                     <Tooltip
                         showArrow
                         placement="bottom"
-                        content={cellValue ? "Email istnieje :)" : ("Mamy podejrzenia, że email może nie istnieć :( Upewnij się, czy pole e-mail przyjmuje poprawną wartość")}
+                        content={cellValue ? t('email_exists_tip') : t('email_maybe_invalid_tip')}
                     >
                         <Chip className="capitalize" color={cellValue ? "success" : "danger"} size="sm" variant="flat">
-                            {cellValue ? "Zweryfikowany" : "Nie zweryfikowany"}
+                            {cellValue ? t('verified') : t('not_verified')}
                         </Chip>
                     </Tooltip>
                 );
@@ -269,48 +275,53 @@ const Home = () => {
         setFilterValue(lowercaseValue);
     };
 
-    const filteredData = data && data.filter(item =>
-        item.first_name.toLowerCase().startsWith(filterValue.toLowerCase())
-    );
+    const filteredData = data && data.filter(item => {
+        const nameMatch = item.first_name.toLowerCase().startsWith(filterValue.toLowerCase());
+        const numberMatch = String(item.number).startsWith(filterValue);
+        return nameMatch || numberMatch;
+    });
+
+    const sortedData = filteredData && [...filteredData].sort((a, b) => {
+        const { column, direction } = sortDescriptor || {};
+        if (!column) return 0;
+        let x = a[column];
+        let y = b[column];
+        if (column === 'number') {
+            x = Number(x);
+            y = Number(y);
+        } else {
+            x = String(x).toLowerCase();
+            y = String(y).toLowerCase();
+        }
+        const res = x < y ? -1 : x > y ? 1 : 0;
+        return direction === 'descending' ? -res : res;
+    });
+
+    const pages = sortedData ? Math.max(1, Math.ceil(sortedData.length / rowsPerPage)) : 1;
+    const paginatedData = sortedData && sortedData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
     return (
         <NextUIProvider>
-            <div className="bg-pink-200 h-screen w-screen">
-                <Head className="shadow-lg">
-                    <title className="shadow-lg">SpeedDatingMatcher</title>
-                    <link rel="icon" href="/images/favicon.ico" sizes="any"/>
-                </Head>
-                <div className="mx-10 flex">
-                    <Image
-                        isZoomed
-                        alt="MailIcon"
-                        src="/mail_icon.png"
-                        aria-label="speed-dating"
-                    />
-                    <div className="text-white mt-10 text-xl">
-                        <h1 className={font.className} style={{fontSize: '2rem'}}>Speed Dating Matcher</h1>
-                    </div>
-
-                </div>
-
-                <div className="h-3/4-screen w-3/4-screen mx-0 justify-center items-center">
-                    <ToastContainer/>
-                    <div className=" ml-10 mb-3 ">
-                        <Button onPress={onPersonModalOpen}
-                                className="bg-white text-black shadow-lg from-pink-500 border-pink-300"
-                                variant="faded"
-                                startContent={<Image src="/add_person_icon.svg/" aria-label="add-person-button"/>}
-                        >
-                            Dodaj osobę
-                        </Button>
-                        <Button onPress={onSendEmailsAlertModalOpen}
-                                className="bg-white text-black shadow-lg from-pink-500 border-pink-300 ml-2"
-                                variant="faded"
-                                startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5"
-                                                     aria-label="send-emails"/>}
-                        >
-                            Wyślij listy
-                        </Button>
+            <ErrorBoundary>
+                <Layout
+                    title={t('app_title')}
+                    subtitle={"CRM Speed Dating"}
+                    actions={(
+                        <>
+                            <Button onPress={onPersonModalOpen} className="bg-white text-black shadow border border-pink-300" variant="faded" startContent={<Image src="/add_person_icon.svg/" aria-label="add-person-button"/>}>
+                                {t('add_person')}
+                            </Button>
+                            <Button onPress={onSendEmailsAlertModalOpen} className="bg-white text-black shadow border border-pink-300" variant="faded" startContent={<Image src="/love_letter_mail.svg/" className="w-5 h-5" aria-label="send-emails"/>}>
+                                {t('send_letters')}
+                            </Button>
+                        </>
+                    )}
+                >
+                    <Head>
+                        <title>SpeedDatingMatcher</title>
+                        <link rel="icon" href="/images/favicon.ico" sizes="any"/>
+                    </Head>
+                    <ToastContainer position="top-right"/>
                         <SendEmailsAlertModal
                             isSendEmailsAlertModalOpen={isSendEmailsAlertModalOpen}
                             onSendEmailsAlertModalClose={onSendEmailsAlertModalClose}
@@ -328,6 +339,7 @@ const Home = () => {
                             fetchDataOnClose={fetchData}
                             isPersonModalOpen={isPersonModalOpen}
                             onPersonModalClose={onPersonModalClose}
+                            existingPersons={data || []}
                         />
 
                         <DeleteAlertModal
@@ -354,23 +366,20 @@ const Home = () => {
                             isContactRequestModalOpen={isContactRequestModalOpen}
                             onContactRequestModalClose={onContactRequestModalClose}
                         />
-                    </div>
-                    <Card
-                        shadow="sm"
-                        className="mx-10 border-pink-300"
-                    >
+                    <Card shadow="sm" className="border-pink-300">
                         <CardBody>
                             <div>
-                                <Input
-                                    size="sm"
-                                    isClearable
-                                    className="w-full sm:max-w-[25%] mb-3 ml-5"
-                                    placeholder="Wyszukaj po imieniu..."
-                                    startContent={<SearchIcon/>}
-                                    value={filterValue}
-                                    onClear={() => setFilterValue('')}
-                                    onValueChange={(value) => handleSearchChange(value)}
-                                />
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Input size="sm" isClearable className="w-full sm:max-w-[30%]" placeholder={t('search_placeholder')} startContent={<SearchIcon/>} value={filterValue} onClear={() => setFilterValue('')} onValueChange={(value) => handleSearchChange(value)} />
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-600">Wierszy na stronę:</span>
+                                        <select className="border rounded px-2 py-1 text-sm" value={rowsPerPage} onChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(1); }}>
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                        </select>
+                                    </div>
+                                </div>
 
                                 {data !== null ? (
                                     <Table
@@ -379,18 +388,21 @@ const Home = () => {
                                         color={"default"}
                                         selectionMode="single"
                                         fullWidth
+                                        sortDescriptor={sortDescriptor}
+                                        onSortChange={setSortDescriptor}
                                     >
                                         <TableHeader columns={columns}>
                                             {(column) =>
                                                 <TableColumn
                                                     key={column.key}
                                                     width={400}
+                                                    allowsSorting={column.key === 'number' || column.key === 'first_name'}
                                                 >
                                                     <p className="text-sm capitalize">{column.label}</p>
                                                 </TableColumn>
                                             }
                                         </TableHeader>
-                                        <TableBody items={filteredData}>
+                                        <TableBody items={paginatedData}>
                                             {(item) => (
                                                 <TableRow key={item.number}>
                                                     {columns.map((column) => (
@@ -409,11 +421,20 @@ const Home = () => {
                                     </div>
 
                                 )}
+                                {sortedData && sortedData.length > 0 && (
+                                    <div className="flex items-center justify-between mt-4">
+                                        <span className="text-xs text-gray-600">Wyświetlanie {(page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, sortedData.length)} z {sortedData.length}</span>
+                                        <div className="flex items-center gap-2">
+                                            <Button size="sm" variant="flat" isDisabled={page <= 1} onPress={() => setPage((p) => Math.max(1, p - 1))}>Poprzednia</Button>
+                                            <Button size="sm" variant="flat" isDisabled={page >= pages} onPress={() => setPage((p) => Math.min(pages, p + 1))}>Następna</Button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </CardBody>
                     </Card>
-                </div>
-            </div>
+                </Layout>
+            </ErrorBoundary>
         </NextUIProvider>
     );
 };

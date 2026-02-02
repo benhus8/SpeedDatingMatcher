@@ -12,21 +12,20 @@ export default function LoginModal({isLoginModalOpen, onLoginModalClose, fetchDa
 
     const handleSubmit = async (values, {resetForm}) => {
         try {
-            const response = await getToken(values);
-            console.log(response)
-            if (response.status === 200) {
-                const data = await response.json();
-                const {access} = data
-                window.sessionStorage.setItem('access_token', `Bearer ${access}`);
-                setIsLoggedIn(true)
-                fetchDataFunction()
-                onLoginModalClose()
-                resetForm()
-            } else if (response.status === 401) {
-                setErrorMessage("Niepoprawne dane, spróbuj ponownie")
+            const data = await getToken(values);
+            const { access } = data || {};
+            if (!access) {
+                setErrorMessage("Niepoprawne dane, spróbuj ponownie");
+                return;
             }
+            window.sessionStorage.setItem('access_token', `Bearer ${access}`);
+            setIsLoggedIn(true);
+            fetchDataFunction();
+            onLoginModalClose();
+            resetForm();
         } catch (error) {
             console.log(error)
+            setErrorMessage("Wystąpił błąd logowania. Spróbuj ponownie.");
         }
     };
 
@@ -34,7 +33,7 @@ export default function LoginModal({isLoginModalOpen, onLoginModalClose, fetchDa
         <Modal isOpen={isLoginModalOpen} placement="top-center" backdrop="blur" hideCloseButton={true}>
             <ModalContent>
                 <Formik
-                    initialValues={{username: undefined, password: undefined}}
+                    initialValues={{username: '', password: ''}}
                     onSubmit={handleSubmit}
                 >
                     {({errors, touched, values}) => (<Form>
@@ -43,7 +42,7 @@ export default function LoginModal({isLoginModalOpen, onLoginModalClose, fetchDa
                             <ModalBody>
                                 <Field
                                     name="username"
-                                    validate={(value) => value === undefined || touched ? "" : "Pole jest wymagane"}>
+                                    validate={(value) => !value ? "Pole jest wymagane" : ""}>
                                     {({field}) => (<Input
                                         {...field}
                                         value={values.username}
@@ -55,11 +54,11 @@ export default function LoginModal({isLoginModalOpen, onLoginModalClose, fetchDa
                                 </Field>
                                 <Field
                                     name="password"
-                                    validate={(value) => value === undefined || touched ? "" : "Pole jest wymagane"}
+                                    validate={(value) => !value ? "Pole jest wymagane" : ""}
                                 >
                                     {({field}) => (<Input
                                         {...field}
-                                        value={values.passowrd}
+                                        value={values.password}
                                         label="Hasło"
                                         variant="bordered"
                                         isRequired={true}
