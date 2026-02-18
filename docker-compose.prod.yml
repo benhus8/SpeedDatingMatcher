@@ -1,27 +1,32 @@
 version: '3.9'
 
 services:
-  web:
+  speed-dating-backend:
     build:
       context: .
     command: gunicorn --bind 0.0.0.0:8000 YouveGotMail.wsgi:application
-    expose:
-      - "8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.speed-dating-backend.rule=Host(`speed-dating.your-domain.dev`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.speed-dating-backend.entrypoints=websecure"
+      - "traefik.http.routers.speed-dating-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.speed-dating-backend.priority=100"
+      - "traefik.http.services.speed-dating-backend.loadbalancer.server.port=8000"
+    networks:
+      - web-public
 
-  frontend:
+  speed-dating-frontend:
     build:
       context: ./frontend
-    expose:
-      - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.speed-dating-frontend.rule=Host(`your-domain.dev`)"
+      - "traefik.http.routers.speed-dating-frontend.entrypoints=websecure"
+      - "traefik.http.routers.speed-dating-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.speed-dating-frontend.loadbalancer.server.port=3000"
+    networks:
+      - web-public
 
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - web
-      - frontend
+networks:
+  web-public:
+    external: true

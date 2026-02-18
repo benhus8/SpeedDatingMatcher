@@ -26,7 +26,13 @@ SECRET_KEY = 'django-insecure-(tf28#b#6ipm0_0n+v&3dv&37x4-&&s4v0y@1nfv3t-pa6q9!_
 # Enable DEBUG for local development to serve static files and detailed errors.
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [
+    'your-domain.dev', 
+    'your-domain.dev',
+    'web',
+    '127.0.0.1',
+    'localhost',
+]
 
 
 # Application definition

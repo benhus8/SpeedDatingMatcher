@@ -145,13 +145,20 @@ def send_email(request):
             continue
 
         for person in matching_dict[key]:
-            h1_tag = soup.new_tag('h1')
-            h1_tag['style'] = H1_TAG_STYLE
-            new_li_tag = soup.new_tag('li')
-            new_li_tag['style'] = LI_TAG_STYLE
-            h1_tag.string = 'Numerek: ' + str(person.number) + ', Email: ' + str(person.email)
-            new_li_tag.append(h1_tag)
-            ul_tag.append(new_li_tag)
+            container = soup.find('div', {'id': 'matches-container'})
+            
+            card_div = soup.new_tag('div', attrs={'class': 'match-card'})
+            
+            label_span = soup.new_tag('span', attrs={'class': 'match-label'})
+            label_span.string = f"Numer: {person.number}"
+            
+            details_div = soup.new_tag('div', attrs={'class': 'match-details'})
+            details_div.string = f"Kontakt: {person.email}"
+            
+            card_div.append(label_span)
+            card_div.append(details_div)
+            
+            container.append(card_div)
 
         msg.add_alternative(soup.prettify(), subtype='html')
         server.send_message(msg)
